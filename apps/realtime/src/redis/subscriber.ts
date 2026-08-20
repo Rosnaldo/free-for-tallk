@@ -54,7 +54,7 @@ function handleRoomReactionEvent(raw: string): void {
         return;
     }
 
-    broadcastRoomReaction(event).catch((err) => logger.error(err, 'failed to broadcast room reaction'));
+    broadcastRoomReaction(event);
 }
 
 function handleRoomDeviceStateEvent(raw: string): void {
@@ -66,7 +66,7 @@ function handleRoomDeviceStateEvent(raw: string): void {
         return;
     }
 
-    broadcastRoomDeviceState(event).catch((err) => logger.error(err, 'failed to broadcast room device state'));
+    broadcastRoomDeviceState(event);
 }
 
 interface WsDeliverEvent {

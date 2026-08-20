@@ -5,6 +5,7 @@ import { createRoom, deleteRoom, addMemberToRoom, removeMemberFromRoom, getRoom 
 import { publishRoomReaction } from '../../../services/room_reaction_redis';
 import { publishRoomDeviceState } from '../../../services/room_device_state_redis';
 import * as roomMembership from '../../room_membership';
+import * as roomSocketRegistry from '../../room_socket_registry';
 
 type RoomCreateMessage = Extract<WsClientMessage, { event: 'room:create' }>;
 type RoomDeleteMessage = Extract<WsClientMessage, { event: 'room:delete' }>;
@@ -24,7 +25,10 @@ export const handleRoomCreate = (ws: AuthenticatedWebSocket, msg: RoomCreateMess
     }
 
     createRoom({ title: msg.title, subtitle: msg.subtitle, maxSlots: msg.maxSlots, creatorId: ws.user._id })
-        .then((room) => roomMembership.set(ws.user._id, room.id))
+        .then((room) => {
+            roomMembership.set(ws.user._id, room.id);
+            roomSocketRegistry.add(room.id, ws);
+        })
         .catch((err) => logger.error(err, 'failed to create room'));
 };
 
@@ -36,7 +40,7 @@ export const handleRoomDelete = (ws: AuthenticatedWebSocket, msg: RoomDeleteMess
                 sendError(ws, 'Somente quem criou a sala pode excluí-la');
                 return;
             }
-            return deleteRoom(msg.roomId);
+            return deleteRoom(msg.roomId).then(() => roomSocketRegistry.clear(msg.roomId));
         })
         .catch((err) => logger.error(err, 'failed to delete room'));
 };
@@ -49,13 +53,17 @@ export const handleRoomJoin = (ws: AuthenticatedWebSocket, msg: RoomJoinMessage)
                 return;
             }
             roomMembership.set(ws.user._id, msg.roomId);
+            roomSocketRegistry.add(msg.roomId, ws);
         })
         .catch((err) => logger.error(err, 'failed to join room'));
 };
 
 export const handleRoomLeave = (ws: AuthenticatedWebSocket, msg: RoomLeaveMessage): void => {
     removeMemberFromRoom(msg.roomId, ws.user._id)
-        .then(() => roomMembership.remove(ws.user._id))
+        .then(() => {
+            roomMembership.remove(ws.user._id);
+            roomSocketRegistry.remove(msg.roomId, ws);
+        })
         .catch((err) => logger.error(err, 'failed to leave room'));
 };
 
@@ -76,6 +84,10 @@ export const handleRoomReaction = (ws: AuthenticatedWebSocket, msg: RoomReaction
                 sendError(ws, 'Você não está nesta sala');
                 return;
             }
+            // Opportunistically re-heals roomSocketRegistry: it's pure
+            // in-memory state, so it goes empty across a restart while this
+            // socket's Redis membership (just checked above) doesn't.
+            roomSocketRegistry.add(msg.roomId, ws);
             return publishRoomReaction({ roomId: msg.roomId, userId: ws.user._id, emoji: msg.emoji });
         })
         .catch((err) => logger.error(err, 'failed to publish room reaction'));
@@ -93,6 +105,7 @@ export const handleRoomDeviceState = (ws: AuthenticatedWebSocket, msg: RoomDevic
                 sendError(ws, 'Você não está nesta sala');
                 return;
             }
+            roomSocketRegistry.add(msg.roomId, ws);
             return publishRoomDeviceState({
                 roomId: msg.roomId,
                 userId: ws.user._id,

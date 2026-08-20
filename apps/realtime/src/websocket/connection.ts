@@ -11,6 +11,7 @@ import { addOnlineUser } from '../services/online_list_redis';
 import { removeMemberFromRoom } from '../services/room_list_redis';
 import * as onlineUserRegistry from './user_registry';
 import * as roomMembership from './room_membership';
+import * as roomSocketRegistry from './room_socket_registry';
 import logger from '#logger';
 
 
@@ -66,6 +67,7 @@ export const onConnection = () => async (ws: AuthenticatedWebSocket): Promise<vo
         clientRegistry.remove(ws);
 
         onlineUserRegistry.remove(ws.user._id);
+        roomSocketRegistry.removeSocket(ws);
 
         const orphanedRoomId = roomMembership.get(ws.user._id);
         if (orphanedRoomId) {
