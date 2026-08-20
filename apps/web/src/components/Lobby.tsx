@@ -294,7 +294,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                     <div className="mt-2.5 text-center">
                       <p className="text-zinc-100 font-medium text-sm flex items-center justify-center gap-1">
                         <span>{member.name}</span>
-                        {isCurrent && <span className="text-[10px] text-amber-400 font-normal">(You)</span>}
+                        {isCurrent && <span className="text-[10px] text-amber-400 font-normal">(Você)</span>}
                       </p>
                     </div>
 
@@ -303,7 +303,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                       type="button"
                       onClick={() => handleGiveHeartInRoom(member)}
                       className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-amber-400 hover:text-rose-400 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                      title={`Give love to ${member.name}`}
+                      title={`Enviar carinho para ${member.name}`}
                     >
                       <Heart className="w-3.5 h-3.5 fill-amber-400 text-amber-400 hover:fill-rose-400 hover:text-rose-400 transition-colors" />
                       <span>{member.hearts || 0}</span>
@@ -317,7 +317,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                 <div key={`lobby-empty-${idx}`} className="flex flex-col items-center justify-center">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-dashed border-zinc-700 flex flex-col items-center justify-center text-zinc-500 bg-zinc-900/40">
                     <Users className="w-6 h-6 opacity-40 mb-1" />
-                    <span className="text-[10px] font-medium text-zinc-500">Open Seat</span>
+                    <span className="text-[10px] font-medium text-zinc-500">Assento Livre</span>
                   </div>
                   <div className="h-10" />
                 </div>
@@ -339,13 +339,13 @@ export const Lobby: React.FC<LobbyProps> = ({
           {/* Quick Reactions Bar */}
           <div className="mt-4 pt-3 border-t border-zinc-800 flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-400 mr-1 hidden sm:inline">Reactions:</span>
+              <span className="text-xs text-zinc-400 mr-1 hidden sm:inline">Reações:</span>
               {REACTION_EMOJIS.map((emoji) => (
                 <button
                   key={emoji}
                   onClick={() => sendReaction(emoji)}
                   className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center text-base hover:scale-115 active:scale-95 transition-transform cursor-pointer shadow"
-                  title={`Send ${emoji}`}
+                  title={`Enviar ${emoji}`}
                 >
                   {emoji}
                 </button>
@@ -439,10 +439,10 @@ export const Lobby: React.FC<LobbyProps> = ({
           <div className="p-3.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/40">
             <div className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-amber-400" />
-              <span className="text-xs font-bold text-zinc-200">Room Chat</span>
+              <span className="text-xs font-bold text-zinc-200">Chat da Sala</span>
             </div>
             <span className="text-[11px] text-zinc-400">
-              {messages.length} messages
+              {messages.length} mensagens
             </span>
           </div>
 
@@ -451,8 +451,8 @@ export const Lobby: React.FC<LobbyProps> = ({
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-4 text-zinc-500 text-xs">
                 <Coffee className="w-8 h-8 opacity-40 mb-2" />
-                <p>No messages yet.</p>
-                <p className="text-[11px] mt-1 text-zinc-600">Say hi to everyone in the lounge!</p>
+                <p>Nenhuma mensagem ainda.</p>
+                <p className="text-[11px] mt-1 text-zinc-600">Diga oi para todos no lounge!</p>
               </div>
             ) : (
               messages.map((msg) => {
@@ -486,7 +486,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                     className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
                   >
                     <span className="text-[10px] text-zinc-400 mb-0.5 px-1">
-                      {isMe ? 'You' : msg.userName}
+                      {isMe ? 'Você' : msg.userName}
                     </span>
                     <div
                       className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
@@ -512,7 +512,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Type a message..."
+                placeholder="Digite uma mensagem..."
                 className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
               />
               <button
@@ -524,7 +524,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                     ? 'bg-amber-500 hover:bg-amber-400 text-zinc-950 cursor-pointer'
                     : 'bg-zinc-950 border border-zinc-800/80 text-zinc-600 opacity-60 cursor-not-allowed'
                 }`}
-                title="Send Message"
+                title="Enviar Mensagem"
               >
                 <Send className="w-3.5 h-3.5" />
               </button>
