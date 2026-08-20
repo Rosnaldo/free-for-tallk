@@ -6,14 +6,14 @@ export const mytoast = Object.assign(
     return sonnerToast(message, {
         ...options,
         cancel: {
-            label: 'Cancel',
+            label: 'Cancelar',
             onClick: () => {},
         },
     });
   },
   {
     success: (message: string, options?: Parameters<typeof sonnerToast>[1]) =>
-      sonnerToast.success('Success!', {
+      sonnerToast.success('Sucesso!', {
         ...options,
         icon: <CheckCircleIcon className="w-5 h-5 text-green-600" />,
         description: message,
@@ -21,12 +21,12 @@ export const mytoast = Object.assign(
             title: '!text-green-600',
         },
         cancel: {
-            label: 'Cancel',
+            label: 'Cancelar',
             onClick: () => {},
         },
       }),
     error: (message: string, options?: Parameters<typeof sonnerToast>[1]) =>
-      sonnerToast.error('Error:', {
+      sonnerToast.error('Erro:', {
         ...options,
         icon: <AlertCircleIcon className="w-5 h-5 text-red-600" />,
         description: message,
@@ -34,12 +34,12 @@ export const mytoast = Object.assign(
             title: '!text-red-600',
         },
         cancel: {
-            label: 'Cancel',
+            label: 'Cancelar',
             onClick: () => {},
         },
       }),
     warn: (message: string, options?: Parameters<typeof sonnerToast>[1]) =>
-      sonnerToast.warning('Warning:', {
+      sonnerToast.warning('Atenção:', {
         ...options,
         icon: <AlertTriangleIcon className="w-5 h-5 text-amber-500" />,
         description: message,
@@ -47,7 +47,7 @@ export const mytoast = Object.assign(
             title: '!text-amber-500',
         },
         cancel: {
-            label: 'Cancel',
+            label: 'Cancelar',
             onClick: () => {},
         },
       }),
@@ -55,7 +55,7 @@ export const mytoast = Object.assign(
       sonnerToast.info(message, {
         ...options,
         cancel: {
-            label: 'Cancel',
+            label: 'Cancelar',
             onClick: () => {},
         },
       }),

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Heart, Settings, LogOut, LogIn, User as UserIcon } from 'lucide-react';
+import { Heart, Settings, LogOut, LogIn, User as UserIcon, LayoutDashboard } from 'lucide-react';
 import { getInitials } from '../utils/helpers';
 import { OnlineUser } from '@repo/shared-types';
 
@@ -8,6 +8,7 @@ export interface UserBadgeProps {
   onOpenConfig?: () => void;
   onLogout?: () => void;
   onLogin?: () => void;
+  onHome?: () => void;
 }
 
 export const UserBadge: React.FC<UserBadgeProps> = ({
@@ -15,6 +16,7 @@ export const UserBadge: React.FC<UserBadgeProps> = ({
   onOpenConfig,
   onLogout,
   onLogin,
+  onHome,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -115,6 +117,19 @@ export const UserBadge: React.FC<UserBadgeProps> = ({
                 </p>
               </div>
 
+              <button
+                id="dropdown-home-btn"
+                role="menuitem"
+                onClick={() => {
+                  setDropdownOpen(false);
+                  onHome?.();
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-white/90 hover:text-white hover:bg-white/10 cursor-pointer transition-colors"
+              >
+                <LayoutDashboard className="w-4 h-4 text-white/70" />
+                <span>Início</span>
+              </button>
+
               {/* Config / Settings Option */}
               <button
                 id="dropdown-config-btn"
@@ -126,7 +141,7 @@ export const UserBadge: React.FC<UserBadgeProps> = ({
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-white/90 hover:text-white hover:bg-white/10 cursor-pointer transition-colors"
               >
                 <Settings className="w-4 h-4 text-white/70" />
-                <span>Config</span>
+                <span>Perfil</span>
               </button>
 
               {/* Logout Option */}
@@ -140,7 +155,7 @@ export const UserBadge: React.FC<UserBadgeProps> = ({
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-rose-400 hover:bg-white/10 cursor-pointer transition-colors"
               >
                 <LogOut className="w-4 h-4 text-rose-400" />
-                <span>Logout</span>
+                <span>Sair</span>
               </button>
             </>
           ) : (
@@ -164,7 +179,7 @@ export const UserBadge: React.FC<UserBadgeProps> = ({
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-amber-500 hover:bg-white/10 cursor-pointer transition-colors"
               >
                 <LogIn className="w-4 h-4 text-amber-500" />
-                <span>Login</span>
+                <span>Entrar</span>
               </button>
             </>
           )}

@@ -24,7 +24,7 @@ interface TitleProps {
 
 export const Title: React.FC<TitleProps> = ({
   id = 'title',
-  label = 'Profile',
+  label = 'Perfil',
   className = '',
 }) => {
   return (
@@ -52,7 +52,7 @@ export const BackToPanelButton: React.FC<BackToPanelButtonProps> = ({ className 
       className={`group flex items-center gap-2 text-xs font-semibold text-white hover:text-amber-400 transition-colors cursor-pointer ${className}`}
     >
       <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-      Voltar ao Painel
+      Voltar
     </button>
   );
 };
@@ -93,7 +93,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const loadingToast = mytoast("Changing avatar...");
+      const loadingToast = mytoast("Alterando avatar...");
       try {
         await processFile(file);
       } catch (error) {
@@ -135,7 +135,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
           <BackToPanelButton />
         </div>
 
-        <Title label="Profile" />
+        <Title label="Perfil" />
 
         {/* 2-column layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
@@ -224,7 +224,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
           <div className="flex flex-col h-full">
             <div
               id="avatar-photo-upload-card"
-              className={`bg-zinc-950 border rounded-2xl p-5 flex flex-col items-center justify-center text-center h-full min-h-[260px] relative transition-all duration-300 ${
+              className={`bg-zinc-950 rounded-2xl p-5 flex flex-col items-center justify-center text-center h-full min-h-[260px] relative transition-all duration-300 ${
                 isDragging ? 'border-dashed border-brand-ochre bg-zinc-900/40 scale-[1.01]' : 'border-zinc-900'
               }`}
               onDragOver={handleDragOver}
@@ -266,7 +266,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
                 onClick={() => fileInputRef.current?.click()}
                 className="flex items-center gap-1.5 px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs font-bold text-white cursor-pointer transition-all focus:outline-none mb-3.5"
               >
-                Upload Photo
+                Enviar Foto
               </button>
 
               <span className="text-[10px] tracking-wide text-zinc-400 leading-relaxed max-w-[180px]">

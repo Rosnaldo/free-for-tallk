@@ -15,7 +15,7 @@ const sendError = (ws: AuthenticatedWebSocket, message: string): void => {
 
 export const handleRoomCreate = (ws: AuthenticatedWebSocket, msg: RoomCreateMessage): void => {
     if (typeof msg.title !== 'string' || !msg.title.trim() || typeof msg.maxSlots !== 'number' || msg.maxSlots < 1) {
-        sendError(ws, 'Invalid room data');
+        sendError(ws, 'Dados da sala inválidos');
         return;
     }
 
@@ -30,7 +30,7 @@ export const handleRoomDelete = (ws: AuthenticatedWebSocket, msg: RoomDeleteMess
         .then((room) => {
             if (!room) return;
             if (room.creator.id !== ws.user._id) {
-                sendError(ws, 'Only the room creator can delete this room');
+                sendError(ws, 'Somente quem criou a sala pode excluí-la');
                 return;
             }
             return deleteRoom(msg.roomId);
@@ -43,7 +43,7 @@ export const handleRoomJoin = (ws: AuthenticatedWebSocket, msg: RoomJoinMessage)
     addMemberToRoom(msg.roomId, member)
         .then((result) => {
             if (!result.ok) {
-                sendError(ws, result.reason === 'full' ? 'Room is full' : 'Room not found');
+                sendError(ws, result.reason === 'full' ? 'A sala está cheia' : 'Sala não encontrada');
                 return;
             }
             roomMembership.set(ws.user._id, msg.roomId);

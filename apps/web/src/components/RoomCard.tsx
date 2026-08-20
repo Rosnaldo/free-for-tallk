@@ -101,7 +101,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
             className="w-full py-2.5 bg-transparent border border-white/20 rounded-xl text-xs font-bold text-white/50 cursor-not-allowed flex items-center justify-center gap-2"
           >
             <Ban className="w-3.5 h-3.5" />
-            <span>This group is full.</span>
+            <span>Este grupo está cheio.</span>
           </button>
         ) : (
           <button
@@ -114,7 +114,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
             }`}
           >
             <Phone className="w-3.5 h-3.5" />
-            <span>{isMember ? 'Back to Talk Room' : 'Join and talk now!'}</span>
+            <span>{isMember ? 'Voltar para a sala' : 'Entrar e conversar!'}</span>
           </button>
         )}
       </div>

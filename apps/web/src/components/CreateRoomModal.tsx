@@ -46,12 +46,12 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({
       >
         {/* Modal Header: Only the title and close button */}
         <div className="flex items-center justify-between border-b border-white/20 pb-4">
-          <h2 className="text-lg font-bold text-white tracking-tight">Create Room</h2>
+          <h2 className="text-lg font-bold text-white tracking-tight">Criar Sala</h2>
           <button
             id="close-create-room-modal-btn"
             onClick={onClose}
             className="p-1.5 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-            title="Close modal"
+            title="Fechar"
           >
             <X className="w-5 h-5" />
           </button>
@@ -61,14 +61,14 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({
           {/* Room Title */}
           <div>
             <label className="block text-xs font-bold text-white uppercase tracking-wider mb-1.5">
-              Room Title
+              Título da Sala
             </label>
             <input
               id="create-room-title-input"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Conversation Lounge"
+              placeholder="ex: Bate-papo Aberto"
               required
               autoFocus
               className="w-full bg-white/5 border border-white/20 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-500 transition-colors"
@@ -78,15 +78,15 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({
           {/* Subtitle / Topic (Optional) */}
           <div>
             <label className="block text-xs font-bold text-white uppercase tracking-wider mb-1.5 flex items-center justify-between">
-              <span>Topic / Description</span>
-              <span className="text-[10px] text-white/50 font-normal">Optional</span>
+              <span>Tópico / Descrição</span>
+              <span className="text-[10px] text-white/50 font-normal">Opcional</span>
             </label>
             <input
               id="create-room-subtitle-input"
               type="text"
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
-              placeholder="e.g. Practicing idioms and everyday storytelling"
+              placeholder="ex: Conversa sobre o dia a dia"
               className="w-full bg-white/5 border border-white/20 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-500 transition-colors"
             />
           </div>
@@ -95,7 +95,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({
           <div>
             <label className="block text-xs font-bold text-white uppercase tracking-wider mb-1.5 flex items-center gap-1">
               <Users className="w-3.5 h-3.5 text-amber-400" />
-              <span>Max Capacity</span>
+              <span>Capacidade Máxima</span>
             </label>
             <div className="grid grid-cols-4 gap-2 bg-white/5 p-1.5 rounded-xl border border-white/20">
               {[2, 3, 4, 6].map((slots) => (
@@ -109,7 +109,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({
                       : 'text-white/70 hover:text-white hover:bg-white/10'
                   }`}
                 >
-                  {slots} Seats
+                  {slots} vagas
                 </button>
               ))}
             </div>
@@ -122,7 +122,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({
               type="submit"
               className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center cursor-pointer active:scale-95"
             >
-              Create Room
+              Criar Sala
             </button>
           </div>
         </form>

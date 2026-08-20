@@ -14,7 +14,7 @@ export function joinUrl(base: string, path?: string) {
 
 export function handleRequestError(error: any) {
     if (error.response) {
-        const message = error.response.data?.message || "API error";
+        const message = error.response.data?.message || "Erro na API";
         mytoast.error(message);
         throw new ApiError(message);
     }
@@ -28,7 +28,7 @@ export async function myfetch<T>(cb: () => Promise<AxiosResponse<any, any, {}>>)
         const res = await cb()
 
         if (res.data?.isError) {
-            throw new ApiError(res.data.message || "request failed");
+            throw new ApiError(res.data.message || "Falha na requisição");
         }
 
         const meeting = res.data as T;

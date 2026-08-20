@@ -51,9 +51,9 @@ export const RoomPage: React.FC = () => {
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
             <AlertCircle className="w-6 h-6" />
           </div>
-          <h2 className="text-lg font-bold text-white">Room Not Found</h2>
+          <h2 className="text-lg font-bold text-white">Sala não encontrada</h2>
           <p className="text-xs text-white/70 leading-relaxed">
-            The room specified in the URL (<span className="text-amber-400 font-mono">{targetRoomId}</span>) could not be found or has ended.
+            A sala especificada na URL (<span className="text-amber-400 font-mono">{targetRoomId}</span>) não foi encontrada ou já terminou.
           </p>
           <button
             onClick={() => {
@@ -63,7 +63,7 @@ export const RoomPage: React.FC = () => {
             className="mt-2 w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-500/20 active:scale-95"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Return to Lounges</span>
+            <span>Voltar para o início</span>
           </button>
         </div>
         <Footer />

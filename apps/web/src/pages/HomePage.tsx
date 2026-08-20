@@ -36,25 +36,25 @@ export const HomePage: React.FC = () => {
 
   const handleJoinRoom = (room: IRoom) => {
     playJoinSound();
-    showToast(`Joining "${room.title}"...`);
+    showToast(`Entrando em "${room.title}"...`);
     navigate(`/room/${room.id}`);
   };
 
   const handleCreateRoom = (newRoomData: Partial<IRoom>) => {
     if (!currentUser) {
-      showToast('You must be logged in to create a room.');
+      showToast('Você precisa estar logado para criar uma sala.');
       return;
     }
 
     initWs.send({
       event: 'room:create',
-      title: newRoomData.title || 'New Voice Lounge',
-      subtitle: newRoomData.subtitle || 'Open dialogue session',
+      title: newRoomData.title || 'Nova Sala de Bate-papo',
+      subtitle: newRoomData.subtitle || 'Sessão de conversa aberta',
       maxSlots: newRoomData.maxSlots || 4,
     });
 
     setIsCreateModalOpen(false);
-    showToast('Voice Lounge created!');
+    showToast('Sala criada!');
   };
 
   return (
@@ -92,12 +92,12 @@ export const HomePage: React.FC = () => {
           {isPreloading && rooms.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-16 text-center">
               <Loader2 className="w-8 h-8 text-amber-500 animate-spin mb-3" />
-              <p className="text-xs font-semibold text-white/70">Loading Bento Rooms...</p>
+              <p className="text-xs font-semibold text-white/70">Carregando salas...</p>
             </div>
           ) : rooms.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-white/20 my-8 mb-12">
               <Users className="w-12 h-12 text-white/40 mb-3" />
-              <h3 className="text-base font-bold text-white">No rooms available</h3>
+              <h3 className="text-base font-bold text-white">Nenhuma sala disponível</h3>
 
             </div>
           ) : (

@@ -97,7 +97,7 @@ export class InitWs {
         };
 
         ws.onerror = (_err) => {
-            mytoast.error('Connection error');
+            mytoast.error('Erro de conexão');
         };
 
         ws.onclose = () => {

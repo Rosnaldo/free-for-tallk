@@ -48,8 +48,8 @@ export const RoomView: React.FC<RoomViewProps> = ({
       id: 'welcome-msg',
       roomId: room.id,
       userId: 'system',
-      userName: 'System',
-      text: `Welcome to ${room.title}! Feel free to say hi.`,
+      userName: 'Sistema',
+      text: `Bem-vindo à ${room.title}! Fique à vontade para dizer oi.`,
       timestamp: Date.now(),
       type: 'text',
     },
@@ -150,7 +150,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
       roomId: room.id,
       userId: currentUser.id,
       userName: currentUser.name,
-      text: `${currentUser.name} reacted with ${emoji}`,
+      text: `${currentUser.name} reagiu com ${emoji}`,
       timestamp: Date.now(),
       type: 'reaction',
     };
@@ -177,7 +177,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
 
   const handleGiveHeartInRoom = (member: OnlineUser) => {
     playHeartSound();
-    triggerFloatingHeart(member.id, `+1 💙 from ${currentUser.name}`);
+    triggerFloatingHeart(member.id, `+1 💙 de ${currentUser.name}`);
   };
 
   const handleLeave = () => {
@@ -301,7 +301,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
                     <div className="mt-2.5 text-center">
                       <p className="text-white font-medium text-sm flex items-center justify-center gap-1">
                         <span>{member.name}</span>
-                        {isCurrent && <span className="text-[10px] text-amber-400 font-normal">(You)</span>}
+                        {isCurrent && <span className="text-[10px] text-amber-400 font-normal">(Você)</span>}
                       </p>
                     </div>
 
@@ -310,7 +310,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
                       type="button"
                       onClick={() => handleGiveHeartInRoom(member)}
                       className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-amber-400 hover:text-rose-400 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                      title={`Give love to ${member.name}`}
+                      title={`Mandar carinho para ${member.name}`}
                     >
                       <Heart className="w-3.5 h-3.5 fill-amber-400 text-amber-400 hover:fill-rose-400 hover:text-rose-400 transition-colors" />
                       <span>{member.hearts || 0}</span>
@@ -324,7 +324,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
                 <div key={`stage-empty-${idx}`} className="flex flex-col items-center justify-center">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-dashed border-white/30 flex flex-col items-center justify-center text-white/60 bg-white/5">
                     <Users className="w-6 h-6 opacity-60 mb-1" />
-                    <span className="text-[10px] font-medium text-white/70">Open Seat</span>
+                    <span className="text-[10px] font-medium text-white/70">Vaga livre</span>
                   </div>
                   <div className="h-10" />
                 </div>
@@ -346,13 +346,13 @@ export const RoomView: React.FC<RoomViewProps> = ({
           {/* Quick Reactions Bar */}
           <div className="mt-4 pt-3 border-t border-white/20 flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-white/70 mr-1 hidden sm:inline">Reactions:</span>
+              <span className="text-xs text-white/70 mr-1 hidden sm:inline">Reações:</span>
               {REACTION_EMOJIS.map((emoji) => (
                 <button
                   key={emoji}
                   onClick={() => sendReaction(emoji)}
                   className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-base hover:scale-115 active:scale-95 transition-transform cursor-pointer shadow"
-                  title={`Send ${emoji}`}
+                  title={`Enviar ${emoji}`}
                 >
                   {emoji}
                 </button>
@@ -446,10 +446,10 @@ export const RoomView: React.FC<RoomViewProps> = ({
           <div className="p-3.5 border-b border-white/20 flex items-center justify-between bg-white/5">
             <div className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-amber-400" />
-              <span className="text-xs font-bold text-white">Room Chat</span>
+              <span className="text-xs font-bold text-white">Chat da Sala</span>
             </div>
             <span className="text-[11px] text-white/60">
-              {messages.length} messages
+              {messages.length} mensagens
             </span>
           </div>
 
@@ -458,8 +458,8 @@ export const RoomView: React.FC<RoomViewProps> = ({
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-4 text-white/50 text-xs">
                 <Coffee className="w-8 h-8 opacity-40 mb-2" />
-                <p>No messages yet.</p>
-                <p className="text-[11px] mt-1 text-white/40">Say hi to everyone in the lounge!</p>
+                <p>Nenhuma mensagem ainda.</p>
+                <p className="text-[11px] mt-1 text-white/40">Diga oi para todo mundo na sala!</p>
               </div>
             ) : (
               messages.map((msg) => {
@@ -493,7 +493,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
                     className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
                   >
                     <span className="text-[10px] text-white/60 mb-0.5 px-1">
-                      {isMe ? 'You' : msg.userName}
+                      {isMe ? 'Você' : msg.userName}
                     </span>
                     <div
                       className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
@@ -519,7 +519,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Type a message..."
+                placeholder="Digite uma mensagem..."
                 className="flex-1 bg-white/5 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-500 transition-colors"
               />
               <button
@@ -531,7 +531,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
                     ? 'bg-amber-500 hover:bg-amber-400 text-black cursor-pointer'
                     : 'bg-black border border-white/20 text-white/40 opacity-60 cursor-not-allowed'
                 }`}
-                title="Send Message"
+                title="Enviar mensagem"
               >
                 <Send className="w-3.5 h-3.5" />
               </button>

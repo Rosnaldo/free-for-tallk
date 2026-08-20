@@ -23,7 +23,7 @@ export function createWebSocketServer(server: Server): ISocketServer {
 
         const timeout = setTimeout(() => {
             logger.warn({}, 'ws auth timeout');
-            ws.send(JSON.stringify({ isError: true, message: 'Authentication timeout' }), () => ws.close());
+            ws.send(JSON.stringify({ isError: true, message: 'Tempo de autenticação esgotado' }), () => ws.close());
         }, AUTH_TIMEOUT_MS);
 
         ws.once('message', async (raw) => {
@@ -47,7 +47,7 @@ export function createWebSocketServer(server: Server): ISocketServer {
                 authWs.userId = tokenUser.id;
                 wss.emit('connection', authWs);
             } catch (err) {
-                const message = err instanceof Error ? err.message : 'Authentication failed';
+                const message = err instanceof Error ? err.message : 'Falha na autenticação';
                 logger.error({ err: message }, 'ws auth failed');
                 ws.send(JSON.stringify({ isError: true, message }), () => ws.close());
             }

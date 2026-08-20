@@ -52,7 +52,7 @@ export const BackToPanelButton: React.FC<BackToPanelButtonProps> = ({ className 
       className={`group flex items-center gap-2 text-xs font-semibold text-white hover:text-amber-400 transition-colors cursor-pointer ${className}`}
     >
       <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-      Voltar ao Painel
+      Voltar
     </button>
   );
 };

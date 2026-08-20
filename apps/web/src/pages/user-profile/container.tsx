@@ -10,17 +10,17 @@ export const UserProfileContainer: React.FC = () => {
   const navigate = useNavigate();
   const currentUser = useCurrentUserStore((s) => s.currentUser);
   const setCurrentUser = useCurrentUserStore((s) => s.setCurrentUser);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(currentUser?.avatar?.url || null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(currentUser?.avatar || null);
   const [fileError, setFileError] = useState<string | null>(null);
   
   const processFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      mytoast.error("Please select an image file")
+      mytoast.error("Selecione um arquivo de imagem")
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      mytoast.error("Image file is too large")
+      mytoast.error("O arquivo de imagem é muito grande")
       return;
     }
 
@@ -33,17 +33,17 @@ export const UserProfileContainer: React.FC = () => {
       setAvatarUrl(url);
       setCurrentUser({
         ...currentUser!,
-        avatar: { ...(currentUser!.avatar ?? { _id: '', s3Path: '', s3Host: '' }), url },
+        avatar: url,
       });
     } catch (error) {
-      setFileError("Error reading image file");
+      setFileError("Erro ao ler o arquivo de imagem");
       throw error;
     }
   };
 
   return (
     <UserProfilePage
-      currentUser={currentUser || null}
+      currentUser={currentUser}
       navigate={navigate}
       processFile={processFile}
       avatarUrl={avatarUrl}

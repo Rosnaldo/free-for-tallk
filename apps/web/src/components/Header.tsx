@@ -14,7 +14,7 @@ export const Header: React.FC = () => {
   };
 
   const handleOpenConfig = () => {
-    // Config handler
+    navigate('/profile');
   };
 
   return (
@@ -30,6 +30,7 @@ export const Header: React.FC = () => {
             onOpenConfig={handleOpenConfig}
             onLogout={handleLogout}
             onLogin={() => navigate('/login')}
+            onHome={() => navigate('/')}
           />
         </div>
       </div>
