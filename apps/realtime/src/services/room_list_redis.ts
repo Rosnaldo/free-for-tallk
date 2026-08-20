@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { REDIS_CHANNELS, REDIS_KEYS, IRoom, OnlineUser, RoomListEvent } from '@repo/shared-types';
+import { REDIS_CHANNELS, REDIS_KEYS, IRoom, RoomListEvent } from '@repo/shared-types';
 import { getRedisClient } from '../redis/singleton';
 
 const ROOM_PREFIX = REDIS_KEYS.ROOM_PREFIX;
@@ -23,15 +23,15 @@ export const createRoom = async (input: {
     title: string;
     subtitle?: string;
     maxSlots: number;
-    creator: OnlineUser;
+    creatorId: string;
 }): Promise<IRoom> => {
     const room: IRoom = {
         id: randomUUID(),
         title: input.title,
         subtitle: input.subtitle,
         maxSlots: input.maxSlots,
-        creator: input.creator,
-        members: [input.creator],
+        creator: input.creatorId,
+        members: [input.creatorId],
     };
     await setRoom(room);
     await publishRoomEvent({ type: 'created', room });
@@ -43,15 +43,15 @@ export const deleteRoom = async (roomId: string): Promise<void> => {
     await publishRoomEvent({ type: 'deleted', roomId });
 };
 
-export const addMemberToRoom = async (roomId: string, member: OnlineUser): Promise<JoinResult> => {
+export const addMemberToRoom = async (roomId: string, userId: string): Promise<JoinResult> => {
     const room = await getRoom(roomId);
     if (!room) return { ok: false, reason: 'not_found' };
-    if (room.members.some((m) => m.id === member.id)) return { ok: true, room };
+    if (room.members.includes(userId)) return { ok: true, room };
     if (room.members.length >= room.maxSlots) return { ok: false, reason: 'full' };
 
-    const updated: IRoom = { ...room, members: [...room.members, member] };
+    const updated: IRoom = { ...room, members: [...room.members, userId] };
     await setRoom(updated);
-    await publishRoomEvent({ type: 'member-added', roomId, member });
+    await publishRoomEvent({ type: 'member-added', roomId, userId });
     return { ok: true, room: updated };
 };
 
@@ -59,7 +59,7 @@ export const removeMemberFromRoom = async (roomId: string, userId: string): Prom
     const room = await getRoom(roomId);
     if (!room) return;
 
-    const remaining = room.members.filter((m) => m.id !== userId);
+    const remaining = room.members.filter((id) => id !== userId);
     if (remaining.length === room.members.length) return; // wasn't a member, nothing changed
 
     if (remaining.length === 0) {

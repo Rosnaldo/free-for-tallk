@@ -10,10 +10,11 @@ import { VoteHeroSection } from '../components/VoteHeroSection';
 import { Footer } from '../components/Footer';
 import { usePreloadRooms } from '../hooks/usePreloadRooms';
 import { playJoinSound } from '../services/audio';
-import { initWs } from '../services/ws/init-ws';
+import { addRoom } from '../services/api/rooms';
 import { Users, CheckCircle, Loader2 } from 'lucide-react';
 import { useCurrentUserStore, useRoomListStore } from '../states/stores';
 import { IRoom } from '@repo/shared-types';
+
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export const HomePage: React.FC = () => {
   const { currentUser } = useCurrentUserStore();
   const {
     rooms,
+    applyDelta,
   } = useRoomListStore();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -37,24 +39,27 @@ export const HomePage: React.FC = () => {
   const handleJoinRoom = (room: IRoom) => {
     playJoinSound();
     showToast(`Entrando em "${room.title}"...`);
-    navigate(`/room/${room.id}`);
+    navigate(`/rooms/${room.id}`);
   };
 
-  const handleCreateRoom = (newRoomData: Partial<IRoom>) => {
+  const handleCreateRoom = async (newRoomData: Partial<IRoom>) => {
     if (!currentUser) {
       showToast('Você precisa estar logado para criar uma sala.');
       return;
     }
 
-    initWs.send({
-      event: 'room:create',
-      title: newRoomData.title || 'Nova Sala de Bate-papo',
-      subtitle: newRoomData.subtitle || 'Sessão de conversa aberta',
-      maxSlots: newRoomData.maxSlots || 4,
-    });
-
-    setIsCreateModalOpen(false);
-    showToast('Sala criada!');
+    try {
+      const room = await addRoom({
+        title: newRoomData.title || 'Nova Sala de Bate-papo',
+        subtitle: newRoomData.subtitle || 'Sessão de conversa aberta',
+        maxSlots: newRoomData.maxSlots || 4,
+      });
+      applyDelta({ type: 'created', room });
+      setIsCreateModalOpen(false);
+      navigate(`/rooms/${room.id}`);
+    } catch {
+      showToast('Não foi possível criar a sala. Tente novamente.');
+    }
   };
 
   return (
@@ -69,7 +74,7 @@ export const HomePage: React.FC = () => {
       {toastMessage && (
         <div
           id="toast-notification"
-          className="fixed top-20 right-6 z-50 px-4 py-2.5 rounded-2xl bg-black border border-white/20 text-white text-xs font-semibold shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200"
+          className="fixed top-20 right-6 z-[70] px-4 py-2.5 rounded-2xl bg-black border border-white/20 text-white text-xs font-semibold shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200"
         >
           <CheckCircle className="w-4 h-4 text-amber-500" />
           <span>{toastMessage}</span>
@@ -98,7 +103,6 @@ export const HomePage: React.FC = () => {
             <div className="relative z-10 flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-white/20 my-8 mb-12">
               <Users className="w-12 h-12 text-white/40 mb-3" />
               <h3 className="text-base font-bold text-white">Nenhuma sala disponível</h3>
-
             </div>
           ) : (
             <div

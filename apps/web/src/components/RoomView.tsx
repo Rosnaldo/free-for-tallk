@@ -19,7 +19,7 @@ import { playLeaveSound, playHeartSound } from '../services/audio';
 import { Footer } from './Footer';
 import confetti from 'canvas-confetti';
 import { getInitials } from '../utils/helpers';
-import { useDevicesStore } from '../states/stores';
+import { useDevicesStore, useOnlineUserListStore } from '../states/stores';
 
 export interface RoomViewProps {
   room: IRoom;
@@ -72,6 +72,11 @@ export const RoomView: React.FC<RoomViewProps> = ({
 
   const isMuted = !microphoneOn;
   const isCameraOn = cameraOn;
+
+  const { onlineUsers } = useOnlineUserListStore();
+  const memberUsers = room.members
+    .map((id) => onlineUsers.find((u) => u.id === id) ?? (id === currentUser.id ? currentUser : undefined))
+    .filter((u): u is NonNullable<typeof u> => !!u);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -230,7 +235,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
           {/* Stage Grid of Participants */}
           <div className="flex-1 flex items-center justify-center">
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 max-w-2xl w-full justify-items-center my-auto">
-              {room.members.map((member) => {
+              {memberUsers.map((member) => {
                 const isCurrent = member.id === currentUser.id;
                 const isUserMuted = isCurrent ? isMuted : member.microphoneOn === false;
                 const isUserCam = isCurrent ? isCameraOn : false;

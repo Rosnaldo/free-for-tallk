@@ -97,8 +97,8 @@ export interface IRoom {
   title: string;
   subtitle?: string;
   maxSlots: number;
-  creator: OnlineUser;
-  members: OnlineUser[];
+  creator: string;
+  members: string[];
 }
 
 export interface ICallSessionParticipant {
@@ -124,7 +124,7 @@ export type OnlineUserListEvent =
 export type RoomListEvent =
   | { type: "created"; room: IRoom }
   | { type: "deleted"; roomId: string }
-  | { type: "member-added"; roomId: string; member: OnlineUser }
+  | { type: "member-added"; roomId: string; userId: string }
   | { type: "member-removed"; roomId: string; userId: string };
 
 export type ActiveRoomEvent =

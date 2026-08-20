@@ -26,8 +26,8 @@ export const createRoomListActions = (
     } else if (event.type === "member-added") {
       set({
         rooms: get().rooms.map((r) =>
-          r.id === event.roomId && !r.members.some((m) => m.id === event.member.id)
-            ? { ...r, members: [...r.members, event.member] }
+          r.id === event.roomId && !r.members.includes(event.userId)
+            ? { ...r, members: [...r.members, event.userId] }
             : r
         ),
       });
@@ -35,7 +35,7 @@ export const createRoomListActions = (
       set({
         rooms: get().rooms.map((r) =>
           r.id === event.roomId
-            ? { ...r, members: r.members.filter((m) => m.id !== event.userId) }
+            ? { ...r, members: r.members.filter((id) => id !== event.userId) }
             : r
         ),
       });

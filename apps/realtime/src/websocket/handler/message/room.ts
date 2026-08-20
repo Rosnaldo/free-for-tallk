@@ -1,5 +1,4 @@
 import { AuthenticatedWebSocket, WsClientMessage } from '#websocket/types';
-import { mapUserToOnlineUser } from '@repo/shared-types';
 import logger from '#logger';
 import { createRoom, deleteRoom, addMemberToRoom, removeMemberFromRoom, getRoom } from '../../../services/room_list_redis';
 import * as roomMembership from '../../room_membership';
@@ -19,8 +18,7 @@ export const handleRoomCreate = (ws: AuthenticatedWebSocket, msg: RoomCreateMess
         return;
     }
 
-    const creator = mapUserToOnlineUser(ws.user, { id: ws.user._id, status: 'online' });
-    createRoom({ title: msg.title, subtitle: msg.subtitle, maxSlots: msg.maxSlots, creator })
+    createRoom({ title: msg.title, subtitle: msg.subtitle, maxSlots: msg.maxSlots, creatorId: ws.user._id })
         .then((room) => roomMembership.set(ws.user._id, room.id))
         .catch((err) => logger.error(err, 'failed to create room'));
 };
@@ -29,7 +27,7 @@ export const handleRoomDelete = (ws: AuthenticatedWebSocket, msg: RoomDeleteMess
     getRoom(msg.roomId)
         .then((room) => {
             if (!room) return;
-            if (room.creator.id !== ws.user._id) {
+            if (room.creator !== ws.user._id) {
                 sendError(ws, 'Somente quem criou a sala pode excluí-la');
                 return;
             }
@@ -39,8 +37,7 @@ export const handleRoomDelete = (ws: AuthenticatedWebSocket, msg: RoomDeleteMess
 };
 
 export const handleRoomJoin = (ws: AuthenticatedWebSocket, msg: RoomJoinMessage): void => {
-    const member = mapUserToOnlineUser(ws.user, { id: ws.user._id, status: 'online' });
-    addMemberToRoom(msg.roomId, member)
+    addMemberToRoom(msg.roomId, ws.user._id)
         .then((result) => {
             if (!result.ok) {
                 sendError(ws, result.reason === 'full' ? 'A sala está cheia' : 'Sala não encontrada');

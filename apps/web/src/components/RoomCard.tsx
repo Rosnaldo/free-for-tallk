@@ -2,6 +2,7 @@ import React from 'react';
 import { Phone, Ban, Heart, UserPlus } from 'lucide-react';
 import { IRoom } from '@repo/shared-types';
 import { getInitials } from '../utils/helpers';
+import { useOnlineUserListStore } from '../states/stores';
 
 interface RoomCardProps {
   room: IRoom;
@@ -16,8 +17,13 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   currentUserId,
   onJoin,
 }) => {
+  const { onlineUsers } = useOnlineUserListStore();
+  const memberUsers = room.members
+    .map((id) => onlineUsers.find((u) => u.id === id))
+    .filter((u): u is NonNullable<typeof u> => !!u);
+
   const isFull = room.members.length >= room.maxSlots;
-  const isMember = room.members.some((m) => m.id === currentUserId);
+  const isMember = room.members.includes(currentUserId ?? '');
   const emptySlotsCount = Math.max(0, room.maxSlots - room.members.length);
 
   return (
@@ -40,7 +46,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
         {/* Avatars Bento Grid - Non-clickable */}
         <div className="my-3 min-h-[72px] flex items-center gap-3 flex-wrap pointer-events-none">
-          {room.members.map((member) => (
+          {memberUsers.map((member) => (
             <div
               key={member.id}
               className="flex flex-col items-center group/member"
@@ -108,9 +114,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
             id={`room-btn-talk-${room.id}`}
             onClick={() => onJoin(room)}
             className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${
-              isMember
-                ? 'bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-black border border-amber-500/50 hover:border-amber-500 shadow-md shadow-amber-500/10'
-                : 'bg-transparent hover:bg-amber-500 text-white hover:text-black border border-white/30 hover:border-amber-500'
+              'hover:bg-amber-500 text-white-300 hover:text-black border border-white-300 hover:border-amber-500'
             }`}
           >
             <Phone className="w-3.5 h-3.5" />

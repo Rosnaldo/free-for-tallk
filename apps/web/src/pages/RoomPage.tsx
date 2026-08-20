@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { RoomView } from '../components/RoomView';
 import { Footer } from '../components/Footer';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
-import { OnlineUser } from '@repo/shared-types';
 import { useActiveRoomStore, useCurrentUserStore, useRoomListStore } from '../states/stores';
 import { initWs } from '../services/ws/init-ws';
 
@@ -30,7 +29,7 @@ export const RoomPage: React.FC = () => {
   // resulting room:delta (see ws-handlers.ts), so this re-fires harmlessly
   // until that arrives and activeRoom.members includes the current user.
   useEffect(() => {
-    if (activeRoom && !activeRoom.members.some((m: OnlineUser) => m.id === currentUser?.id)) {
+    if (activeRoom && currentUser && !activeRoom.members.includes(currentUser.id)) {
       if (activeRoom.members.length < activeRoom.maxSlots) {
         initWs.send({ event: 'room:join', roomId: activeRoom.id });
       }

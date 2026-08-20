@@ -55,20 +55,13 @@ export function useCreateRoomModal(options?: UseCreateRoomModalOptions) {
       e.preventDefault();
       if (!title.trim()) return;
 
-      if (onCreateRoom && currentUser) {
-        onCreateRoom({
-          title: title.trim(),
-          subtitle: subtitle.trim() || undefined,
-          maxSlots,
-          creator: currentUser,
-          members: [
-            {
-              ...currentUser,
-              microphoneOn: true,
-            },
-          ],
-        });
-      }
+      onCreateRoom?.({
+        title: title.trim(),
+        subtitle: subtitle.trim() || undefined,
+        maxSlots,
+        creator: currentUser?.id,
+        members: currentUser ? [currentUser.id] : [],
+      });
     },
     [title, subtitle, maxSlots, currentUser, onCreateRoom]
   );

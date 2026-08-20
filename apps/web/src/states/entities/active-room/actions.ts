@@ -31,13 +31,13 @@ export const createActiveRoomActions = (
       const rooms = useRoomListStore.getState().rooms;
       const activeRoom = rooms.find((r) => r.id === roomId);
       if (!activeRoom) return { activeRoomId: null };
-      const isAlready = activeRoom.members.some((m) => m.id === user.id);
+      const isAlready = activeRoom.members.includes(user.id);
       if (isAlready) return { activeRoomId: null };
       if (activeRoom.members.length >= activeRoom.maxSlots) return { activeRoomId: null };
 
       const updatedRoom: IRoom = {
         ...activeRoom,
-        members: [...activeRoom.members, user],
+        members: [...activeRoom.members, user.id],
       };
       return {
         activeRoomId: updatedRoom.id,
@@ -52,7 +52,7 @@ export const createActiveRoomActions = (
         if (r.id !== roomId) return r;
         return {
           ...r,
-          members: r.members.filter((m) => m.id !== userId),
+          members: r.members.filter((id) => id !== userId),
         };
       }),
     }));

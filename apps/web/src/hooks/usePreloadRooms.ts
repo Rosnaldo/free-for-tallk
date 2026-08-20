@@ -1,6 +1,7 @@
 import { IRoom } from '@repo/shared-types';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRoomListStore } from '../states/stores';
+import { fetchRooms } from '../services/api/rooms';
 
 interface UsePreloadRoomsReturn {
   isLoading: boolean;
@@ -9,12 +10,9 @@ interface UsePreloadRoomsReturn {
   reload: () => Promise<IRoom[]>;
 }
 
-const STORAGE_KEY = 'bento_rooms_state_v1';
-
 /**
- * Custom Hook for preloading the initial room dataset.
- * It simulates or performs the initial fetch, populates the Zustand store,
- * and handles cached persistence if available.
+ * Custom Hook for preloading the initial room dataset from the API
+ * and populating the Zustand store.
  */
 export const usePreloadRooms = (): UsePreloadRoomsReturn => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -29,32 +27,13 @@ export const usePreloadRooms = (): UsePreloadRoomsReturn => {
     setError(null);
 
     try {
-      // Check local cache first or fallback to INITIAL_ROOMS
-      const cached = localStorage.getItem(STORAGE_KEY);
-      let data: IRoom[] = [];
-
-      if (cached) {
-        try {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            data = parsed;
-          }
-        } catch {
-          data = [];
-        }
-      }
-
-      // Small async tick to simulate seamless non-blocking preload
-      await new Promise((resolve) => setTimeout(resolve, 80));
-
+      const data = await fetchRooms();
       setRooms(data);
       setIsLoaded(true);
       return data;
     } catch (err) {
       const errObj = err instanceof Error ? err : new Error('Failed to preload rooms');
       setError(errObj);
-      // Fallback to initial rooms on error
-      setRooms([]);
       return [];
     } finally {
       setIsLoading(false);
