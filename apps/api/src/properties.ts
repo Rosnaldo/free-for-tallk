@@ -1,6 +1,11 @@
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ path: '.env' });
+
+dotenv.config({
+  path: `.env.${process.env.NODE_ENV}`,
+  override: true,
+});
 
 const keycloakBaseUrl = process.env.KEYCLOAK_BASE_URL || 'http://localhost:8080';
 const keycloakRealm = process.env.KEYCLOAK_REALM || 'poc';

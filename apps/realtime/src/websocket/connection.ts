@@ -20,6 +20,8 @@ export const onConnection = () => async (ws: AuthenticatedWebSocket): Promise<vo
     clientRegistry.add(ws);
 
     const user: OnlineUser = mapUserToOnlineUser(ws.user, { id: ws.user._id, status: 'online' });
+    onlineUserRegistry.set(user.id, ws);
+
     const scheduleGracePeriod = (): void => {
         startGracePeriod(user.id).catch((err) => logger.error(err, 'failed to start grace period'));
     };
@@ -57,7 +59,7 @@ export const onConnection = () => async (ws: AuthenticatedWebSocket): Promise<vo
         logger.info({ userId: ws.user._id, email: ws.user.email }, 'ws client disconnected');
         clientRegistry.remove(ws);
 
-        onlineUserRegistry.remove(ws.userId);
+        onlineUserRegistry.remove(ws.user._id);
 
         const orphanedRoomId = roomMembership.get(ws.user._id);
         if (orphanedRoomId) {

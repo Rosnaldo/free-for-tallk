@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { OnlineUser } from '@repo/shared-types';
 import { useOnlineUserListStore } from '../states/stores';
+import { fetchOnlineUsers } from '../services/api/online-users';
 
 interface UsePreloadOnlineUsersReturn {
   isLoading: boolean;
@@ -9,12 +10,9 @@ interface UsePreloadOnlineUsersReturn {
   reload: () => Promise<OnlineUser[]>;
 }
 
-const STORAGE_KEY = 'bento_online_users_v1';
-
 /**
- * Custom Hook for preloading the initial online users dataset.
- * It simulates or performs the initial fetch, populates the useOnlineUsersStore,
- * and manages local cached persistence if available.
+ * Custom Hook for preloading the initial online users dataset from the API
+ * and populating the Zustand store.
  */
 export const usePreloadOnlineUsers = (): UsePreloadOnlineUsersReturn => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -29,32 +27,13 @@ export const usePreloadOnlineUsers = (): UsePreloadOnlineUsersReturn => {
     setError(null);
 
     try {
-      // Check local cache first or fallback to INITIAL_ONLINE_USERS
-      const cached = localStorage.getItem(STORAGE_KEY);
-      let data: OnlineUser[] = [];
-
-      if (cached) {
-        try {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            data = parsed;
-          }
-        } catch {
-          data = [];
-        }
-      }
-
-      // Small async tick to simulate seamless non-blocking preload
-      await new Promise((resolve) => setTimeout(resolve, 80));
-
+      const data = await fetchOnlineUsers();
       setOnlineUsers(data);
       setIsLoaded(true);
       return data;
     } catch (err) {
       const errObj = err instanceof Error ? err : new Error('Failed to preload online users');
       setError(errObj);
-      // Fallback to initial online users on error
-      setOnlineUsers([]);
       return [];
     } finally {
       setIsLoading(false);

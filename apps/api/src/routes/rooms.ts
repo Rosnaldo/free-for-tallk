@@ -7,7 +7,7 @@ import logger from '../logger';
 
 const router = Router();
 
-router.get('/rooms', GetKeycloakUser, GetUser, async (_req, res) => {
+router.get('/rooms', async (_req, res) => {
   try {
     const rooms = await getRoomList();
     res.status(200).json({ rooms });
