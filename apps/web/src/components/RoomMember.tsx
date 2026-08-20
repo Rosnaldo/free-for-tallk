@@ -3,15 +3,9 @@ import { MicOff } from 'lucide-react';
 import { HeartCounter } from './HeartCounter';
 import { OnlineUser } from '@repo/shared-types';
 import { getInitials } from '../utils/helpers';
+import type { ReactionParticle } from '../states/local/reactions/state';
 
-export interface ReactionParticle {
-  id: string;
-  userId: string;
-  emoji: string;
-  tx: number;
-  delayMs: number;
-  sizeRem: number;
-}
+export type { ReactionParticle };
 
 export interface RoomMemberProps {
   member: OnlineUser;

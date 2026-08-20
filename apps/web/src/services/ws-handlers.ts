@@ -1,11 +1,12 @@
 import type { WsServerMessage } from '@repo/shared-types';
-import type { CurrentUserStoreInstance, OnlineUserListStoreInstance, RoomListStoreInstance } from '../states/stores.ts';
+import type { CurrentUserStoreInstance, OnlineUserListStoreInstance, ReactionsStoreInstance, RoomListStoreInstance } from '../states/stores.ts';
 import { mytoast } from '../components/toast.tsx';
 
 export interface WsHandlerStores {
   currentUserStore: CurrentUserStoreInstance;
   onlineUserListStore: OnlineUserListStoreInstance;
   roomListStore: RoomListStoreInstance;
+  reactionsStore: ReactionsStoreInstance;
 }
 
 export function handleWsMessage(message: WsServerMessage, stores: WsHandlerStores): void {
@@ -33,5 +34,15 @@ export function handleWsMessage(message: WsServerMessage, stores: WsHandlerStore
     case 'room:delta':
       stores.roomListStore.getState().applyDelta(message.delta);
       break;
+    case 'room:reaction': {
+      // The sender already triggers their own animation instantly on click
+      // (see RoomView.sendReaction) -- this only needs to animate it for
+      // everyone else in the room.
+      const currentUserId = stores.currentUserStore.getState().currentUser?.id;
+      if (message.userId !== currentUserId) {
+        stores.reactionsStore.getState().triggerReaction(message.userId, message.emoji);
+      }
+      break;
+    }
   }
 }

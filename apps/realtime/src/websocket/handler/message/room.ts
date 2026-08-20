@@ -1,12 +1,15 @@
 import { AuthenticatedWebSocket, WsClientMessage } from '#websocket/types';
+import { ROOM_REACTION_EMOJIS } from '@repo/shared-types';
 import logger from '#logger';
 import { createRoom, deleteRoom, addMemberToRoom, removeMemberFromRoom, getRoom } from '../../../services/room_list_redis';
+import { publishRoomReaction } from '../../../services/room_reaction_redis';
 import * as roomMembership from '../../room_membership';
 
 type RoomCreateMessage = Extract<WsClientMessage, { event: 'room:create' }>;
 type RoomDeleteMessage = Extract<WsClientMessage, { event: 'room:delete' }>;
 type RoomJoinMessage = Extract<WsClientMessage, { event: 'room:join' }>;
 type RoomLeaveMessage = Extract<WsClientMessage, { event: 'room:leave' }>;
+type RoomReactionMessage = Extract<WsClientMessage, { event: 'room:reaction' }>;
 
 const sendError = (ws: AuthenticatedWebSocket, message: string): void => {
     ws.send(JSON.stringify({ event: 'error', message }));
@@ -52,4 +55,26 @@ export const handleRoomLeave = (ws: AuthenticatedWebSocket, msg: RoomLeaveMessag
     removeMemberFromRoom(msg.roomId, ws.user._id)
         .then(() => roomMembership.remove(ws.user._id))
         .catch((err) => logger.error(err, 'failed to leave room'));
+};
+
+export const handleRoomReaction = (ws: AuthenticatedWebSocket, msg: RoomReactionMessage): void => {
+    if (!(ROOM_REACTION_EMOJIS as readonly string[]).includes(msg.emoji)) {
+        sendError(ws, 'Reação inválida');
+        return;
+    }
+
+    // Checked against Redis (the authoritative room state) rather than the
+    // in-memory roomMembership map: that map only reflects joins this exact
+    // process has handled, so it goes stale on every restart/redeploy while
+    // a client's socket just reconnects without resending room:join (it only
+    // does that when its own local room state says it isn't a member yet).
+    getRoom(msg.roomId)
+        .then((room) => {
+            if (!room || !room.members.includes(ws.user._id)) {
+                sendError(ws, 'Você não está nesta sala');
+                return;
+            }
+            return publishRoomReaction({ roomId: msg.roomId, userId: ws.user._id, emoji: msg.emoji });
+        })
+        .catch((err) => logger.error(err, 'failed to publish room reaction'));
 };

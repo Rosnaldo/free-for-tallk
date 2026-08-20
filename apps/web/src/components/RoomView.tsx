@@ -4,23 +4,15 @@ import { playLeaveSound } from '../services/audio';
 import { RoomChat } from './RoomChat';
 import { ScreenPainel } from './ScreenPainel';
 import confetti from 'canvas-confetti';
-import { IChatMessage, IRoom, OnlineUser } from '@repo/shared-types';
-import { useDevicesStore } from '../states/stores';
+import { IChatMessage, IRoom, OnlineUser, RoomReactionEmoji } from '@repo/shared-types';
+import { useDevicesStore, useReactionsStore } from '../states/stores';
+import { initWs } from '../services/ws/init-ws';
 
 export interface RoomViewProps {
   room: IRoom;
   currentUser: OnlineUser;
   onLeaveRoom: () => void;
   onGiveHeart: (roomId: string, targetUserId: string) => void;
-}
-
-interface ReactionParticle {
-  id: string;
-  userId: string;
-  emoji: string;
-  tx: number;
-  delayMs: number;
-  sizeRem: number;
 }
 
 export const RoomView: React.FC<RoomViewProps> = ({
@@ -44,7 +36,10 @@ export const RoomView: React.FC<RoomViewProps> = ({
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [floatingHearts, setFloatingHearts] = useState<{ id: string; x: number; y: number; text: string }[]>([]);
-  const [activeReactions, setActiveReactions] = useState<ReactionParticle[]>([]);
+
+  // Reaction animation state lives in its own store so it can be driven both
+  // by local clicks and by ws events from other room members (see below).
+  const { activeReactions, triggerReaction } = useReactionsStore();
 
   // Devices state from Zustand store
   const {
@@ -60,30 +55,6 @@ export const RoomView: React.FC<RoomViewProps> = ({
   const isMuted = !microphoneOn;
   const isDeafened = !isAudioEnabled;
   const isCameraOn = cameraOn;
-
-  const triggerUserReaction = (userId: string, emoji: string) => {
-    if (emoji === '🎉') return;
-
-    const batchId = `react-batch-${Date.now()}-${Math.random()}`;
-    const particle: ReactionParticle = {
-      id: `${batchId}-0`,
-      userId,
-      emoji,
-      tx: 0,
-      delayMs: 0,
-      sizeRem: 2.4,
-    };
-
-    // Replace any existing active reaction for this user so only 1 icon renders
-    setActiveReactions((prev) => {
-      const filtered = prev.filter((p) => p.userId !== userId);
-      return [...filtered, particle];
-    });
-
-    setTimeout(() => {
-      setActiveReactions((prev) => prev.filter((p) => !p.id.startsWith(batchId)));
-    }, 1800);
-  };
 
   const handleToggleMic = () => {
     setMicrophoneOn(!microphoneOn);
@@ -116,7 +87,10 @@ export const RoomView: React.FC<RoomViewProps> = ({
 
   const sendReaction = (emoji: string) => {
     // Instantly trigger animation beside current user's avatar
-    triggerUserReaction(currentUser.id, emoji);
+    triggerReaction(currentUser.id, emoji);
+
+    // Notify other users in the room so their screens animate too
+    initWs.send({ event: 'room:reaction', roomId: room.id, emoji: emoji as RoomReactionEmoji });
 
     const reactionMsg: IChatMessage = {
       id: `react-${Date.now()}`,

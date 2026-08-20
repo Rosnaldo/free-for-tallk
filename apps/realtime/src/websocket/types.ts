@@ -1,4 +1,4 @@
-import { IUser, EventEmitterTransport } from '@repo/shared-types';
+import { IUser, EventEmitterTransport, RoomReactionEmoji } from '@repo/shared-types';
 
 export interface AuthenticatedWebSocket extends EventEmitterTransport {
     user: IUser;
@@ -20,3 +20,4 @@ export type WsClientMessage =
     | { event: 'room:delete'; roomId: string }
     | { event: 'room:join'; roomId: string }
     | { event: 'room:leave'; roomId: string }
+    | { event: 'room:reaction'; roomId: string; emoji: RoomReactionEmoji }

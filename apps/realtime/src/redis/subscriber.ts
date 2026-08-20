@@ -1,10 +1,11 @@
 import type Redis from 'ioredis';
-import { REDIS_CHANNELS, SOCKET_OPEN, OnlineUserListEvent, RoomListEvent, WsServerMessage } from '@repo/shared-types';
+import { REDIS_CHANNELS, SOCKET_OPEN, OnlineUserListEvent, RoomListEvent, RoomReactionEvent, WsServerMessage } from '@repo/shared-types';
 import logger from '#logger';
 import { getRedisClient } from './singleton';
 import { addOnlineUser as addOnlineUserPresence, removeOnlineUser as removeOnlineUserPresence, patchOnlineUserIfPresent } from '../services/online_list_redis';
 import * as onlineRegistry from '../websocket/user_registry';
 import { broadcastRoomDelta } from '../websocket/broadcast_room_delta';
+import { broadcastRoomReaction } from '../websocket/broadcast_room_reaction';
 
 let subscriber: Redis | undefined;
 
@@ -43,6 +44,18 @@ function handleRoomListEvent(raw: string): void {
     broadcastRoomDelta(event);
 }
 
+function handleRoomReactionEvent(raw: string): void {
+    let event: RoomReactionEvent;
+    try {
+        event = JSON.parse(raw);
+    } catch (err) {
+        logger.error(err, 'failed to parse room reaction event');
+        return;
+    }
+
+    broadcastRoomReaction(event).catch((err) => logger.error(err, 'failed to broadcast room reaction'));
+}
+
 interface WsDeliverEvent {
     id: string;
     message: WsServerMessage;
@@ -78,14 +91,18 @@ export const startListSubscriber = async (): Promise<void> => {
         if (channel === REDIS_CHANNELS.ROOM_LIST_UPDATED) {
             handleRoomListEvent(message);
         }
+        if (channel === REDIS_CHANNELS.ROOM_REACTION_EMITTED) {
+            handleRoomReactionEvent(message);
+        }
     });
 
     await subscriber.subscribe(
         REDIS_CHANNELS.ONLINE_USER_LIST_UPDATED,
         REDIS_CHANNELS.ONLINE_USER_WS_DELIVER,
-        REDIS_CHANNELS.ROOM_LIST_UPDATED
+        REDIS_CHANNELS.ROOM_LIST_UPDATED,
+        REDIS_CHANNELS.ROOM_REACTION_EMITTED
     );
-    logger.info('subscribed to online-list, ws-delivery, and room-list redis channels');
+    logger.info('subscribed to online-list, ws-delivery, room-list, and room-reaction redis channels');
 };
 
 export const stopListSubscriber = async (): Promise<void> => {

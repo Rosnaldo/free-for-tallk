@@ -10,7 +10,17 @@ export const REDIS_CHANNELS = {
 
   // room list mutated (create/delete/join/leave), relayed to every instance
   ROOM_LIST_UPDATED: "room-list:updated",
+
+  // reaction emitted in a room, relayed to every instance so it can be
+  // delivered to that room's members regardless of which instance they're
+  // connected to
+  ROOM_REACTION_EMITTED: "room-reaction:emitted",
 } as const;
+
+// Emojis a client is allowed to react with -- shared so the realtime server
+// can reject anything else instead of trusting client input verbatim.
+export const ROOM_REACTION_EMOJIS = ['❤️', '👏', '😂', '🎉'] as const;
+export type RoomReactionEmoji = typeof ROOM_REACTION_EMOJIS[number];
 
 // Shared between realtime (the sole writer, via redis/subscriber.ts) and api
 // (a reader, checking current status before matching) so both agree on the
@@ -24,6 +34,7 @@ export type WsServerMessage =
   | { event: "error"; message: string }
   | { event: "online-user:delta"; delta: OnlineUserListEvent }
   | { event: "room:delta"; delta: RoomListEvent }
+  | { event: "room:reaction"; roomId: string; userId: string; emoji: RoomReactionEmoji }
 
 export type WsClientMessage =
   | { event: "ping" }
@@ -32,6 +43,13 @@ export type WsClientMessage =
   | { event: "room:delete"; roomId: string }
   | { event: "room:join"; roomId: string }
   | { event: "room:leave"; roomId: string }
+  | { event: "room:reaction"; roomId: string; emoji: RoomReactionEmoji }
+
+export interface RoomReactionEvent {
+  roomId: string;
+  userId: string;
+  emoji: RoomReactionEmoji;
+}
 
 export const UserRole = {
     admin: 'admin',

@@ -9,6 +9,7 @@ import {
   Video,
   VideoOff,
 } from 'lucide-react';
+import { ROOM_REACTION_EMOJIS } from '@repo/shared-types';
 
 export interface RoomControlsBarProps {
   isMuted?: boolean;
@@ -25,7 +26,7 @@ export interface RoomControlsBarProps {
   className?: string;
 }
 
-const DEFAULT_REACTION_EMOJIS = ['❤️', '👏', '😂', '🎉'];
+const DEFAULT_REACTION_EMOJIS: string[] = [...ROOM_REACTION_EMOJIS];
 
 export const RoomControlsBar: React.FC<RoomControlsBarProps> = ({
   isMuted = false,
