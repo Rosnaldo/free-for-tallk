@@ -1,4 +1,4 @@
-import { IUser, EventEmitterTransport, RoomReactionEmoji } from '@repo/shared-types';
+import { IUser, EventEmitterTransport } from '@repo/shared-types';
 
 export interface AuthenticatedWebSocket extends EventEmitterTransport {
     user: IUser;
@@ -13,12 +13,3 @@ export type WsClientEvent = 'heartbeat' | 'user_logout' | 'request_state';
 export interface CancelledCallData {
     targetUserId: string;
 }
-
-export type WsClientMessage =
-    | { event: 'user_logout' }
-    | { event: 'room:create'; title: string; subtitle?: string; maxSlots: number }
-    | { event: 'room:delete'; roomId: string }
-    | { event: 'room:join'; roomId: string }
-    | { event: 'room:leave'; roomId: string }
-    | { event: 'room:reaction'; roomId: string; emoji: RoomReactionEmoji }
-    | { event: 'room:device-state'; roomId: string; microphoneOn: boolean; cameraOn: boolean }

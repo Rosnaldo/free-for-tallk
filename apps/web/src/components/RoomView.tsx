@@ -12,14 +12,12 @@ export interface RoomViewProps {
   room: IRoom;
   currentUser: OnlineUser;
   onLeaveRoom: () => void;
-  onGiveHeart: (roomId: string, targetUserId: string) => void;
 }
 
 export const RoomView: React.FC<RoomViewProps> = ({
   room,
   currentUser,
   onLeaveRoom,
-  onGiveHeart,
 }) => {
   // Chat lives in its own store (rather than local state) so a reaction
   // received over ws (see ws-handlers.ts) can add a chat entry from outside

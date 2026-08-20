@@ -24,12 +24,15 @@ export function remove(roomId: string, ws: AuthenticatedWebSocket): void {
     if (sockets.size === 0) registry.delete(roomId);
 }
 
-// Used on disconnect, when the caller only knows the socket -- removes it
-// from whichever room it was registered under without needing the roomId.
-export function removeSocket(ws: AuthenticatedWebSocket): void {
+export function removeSocket(ws: AuthenticatedWebSocket): string[] {
+    const roomIds: string[] = [];
     for (const [roomId, sockets] of registry) {
-        if (sockets.delete(ws) && sockets.size === 0) registry.delete(roomId);
+        if (sockets.delete(ws)) {
+            roomIds.push(roomId);
+            if (sockets.size === 0) registry.delete(roomId);
+        }
     }
+    return roomIds;
 }
 
 // Used when a room is deleted -- its members no longer need an entry to

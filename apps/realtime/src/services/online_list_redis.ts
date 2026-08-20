@@ -1,6 +1,8 @@
 import { REDIS_KEYS, OnlineUser } from '@repo/shared-types';
 import { getRedisClient } from '../redis/singleton';
 import { broadcastOnlineUserDelta } from '../websocket/broadcast_online_user_delta';
+import { broadcastOnlineUserStatusInRoom } from '../websocket/broadcast_online_user_status';
+import { getUserRoom } from './room_list_redis';
 
 const ONLINE_USER_PREFIX = REDIS_KEYS.ONLINE_USER_PREFIX;
 
@@ -15,22 +17,20 @@ export const setOnlineUser = async (user: OnlineUser, patch: Partial<OnlineUser>
     await getRedisClient().set(`${ONLINE_USER_PREFIX}${user.id}`, JSON.stringify({ ...user, ...patch }), 'EX', TTL_SECONDS);
 };
 
-export const patchOnlineUserIfPresent = async (userId: string, patch: Partial<OnlineUser>): Promise<void> => {
+export const patchOnlineUserIfPresent = async (userId: string, patch: Partial<OnlineUser>, roomIds?: string[]): Promise<void> => {
     const user = await getOnlineUser(userId);
     if (!user) return;
     await setOnlineUser(user, patch);
-    if (patch.status) broadcastOnlineUserDelta({ type: 'update-status', onlineUserId: userId, status: patch.status });
+    if (patch.status) {
+        const rooms = roomIds ?? [await getUserRoom(userId)].filter((id): id is string => id !== null);
+        for (const roomId of rooms) broadcastOnlineUserStatusInRoom(roomId, userId, patch.status);
+    }
 };
 
 export const addOnlineUser = async (user: OnlineUser): Promise<OnlineUser> => {
-    const existing = await getOnlineUser(user.id);
-    const toStore: OnlineUser = {
-        ...user,
-        status: existing?.status ?? user.status,
-    };
-    await getRedisClient().set(`${ONLINE_USER_PREFIX}${user.id}`, JSON.stringify(toStore), 'EX', TTL_SECONDS);
-    broadcastOnlineUserDelta({ type: 'upsert', onlineUser: toStore });
-    return toStore;
+    await getRedisClient().set(`${ONLINE_USER_PREFIX}${user.id}`, JSON.stringify(user), 'EX', TTL_SECONDS);
+    broadcastOnlineUserDelta({ type: 'upsert', onlineUser: user });
+    return user;
 };
 
 export const removeOnlineUser = async (userId: string): Promise<void> => {

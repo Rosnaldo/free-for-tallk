@@ -17,17 +17,12 @@ export const RoomPage: React.FC = () => {
   const targetRoomId = roomId || activeRoomId;
   const activeRoom = rooms.find((r) => r.id === targetRoomId) || null;
 
-  // Keep store activeRoomId in sync with route parameter
   useEffect(() => {
     if (roomId && activeRoomId !== roomId) {
       setActiveRoomId(roomId);
     }
   }, [roomId, activeRoomId, setActiveRoomId]);
 
-  // Automatically join the room member list if not already present. The
-  // member list itself only updates once realtime broadcasts back the
-  // resulting room:delta (see ws-handlers.ts), so this re-fires harmlessly
-  // until that arrives and activeRoom.members includes the current user.
   useEffect(() => {
     if (activeRoom && currentUser && !activeRoom.members.includes(currentUser.id)) {
       if (activeRoom.members.length < activeRoom.maxSlots) {

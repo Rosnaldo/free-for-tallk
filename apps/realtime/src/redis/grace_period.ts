@@ -1,7 +1,7 @@
 import { getRedisClient } from './singleton';
 import { onKeyExpired } from './expiry_subscriber';
 
-const GRACE_PERIOD_SECONDS = 2 * 60;
+const GRACE_PERIOD_SECONDS = 30;
 
 function prefixFor(): string {
   return `grace:`;

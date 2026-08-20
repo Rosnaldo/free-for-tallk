@@ -11,7 +11,26 @@ import { startListSubscriber, stopListSubscriber } from './redis/subscriber';
 import { startExpirySubscriber, stopExpirySubscriber } from './redis/expiry_subscriber';
 import { onGraceExpired } from './redis/grace_period';
 import { registerJoinGraceExpiry } from './redis/join_grace';
-import { clearOnlineUserList, removeOnlineUser } from './services/online_list_redis';
+import { clearOnlineUserList, removeOnlineUser, getOnlineUser } from './services/online_list_redis';
+import { getUserRoom, removeMemberFromRoom, clearUserRoom } from './services/room_list_redis';
+import { publishRoomNotice } from './services/room_notice_redis';
+
+
+async function handleGraceExpired(id: string): Promise<void> {
+    const onlineUser = await getOnlineUser(id);
+    const userName = onlineUser?.name ?? 'Alguém';
+
+    await removeOnlineUser(id);
+
+    const roomId = await getUserRoom(id);
+    if (!roomId) return;
+
+    const removed = await removeMemberFromRoom(roomId, id);
+    await clearUserRoom(id);
+    if (!removed) return;
+
+    await publishRoomNotice({ roomId, userId: id, userName, type: 'leave' });
+}
 
 class WebhookServer {
     private static instance: WebhookServer;
@@ -66,8 +85,9 @@ class WebhookServer {
         await startListSubscriber();
 
         onGraceExpired((id) => {
-            removeOnlineUser(id)
-                .catch((err) => logger.error(err, 'grace period: falha ao remover/gravar sessão de voluntário'));
+            handleGraceExpired(id).catch((err) =>
+                logger.error(err, 'grace period: falha ao remover/gravar sessão de voluntário'),
+            );
         });
         registerJoinGraceExpiry();
         await startExpirySubscriber();

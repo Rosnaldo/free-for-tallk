@@ -1,12 +1,11 @@
-import { AuthenticatedWebSocket, WsClientMessage } from '#websocket/types';
-import { ROOM_REACTION_EMOJIS } from '@repo/shared-types';
+import { AuthenticatedWebSocket } from '#websocket/types';
+import { ROOM_REACTION_EMOJIS, WsClientMessage } from '@repo/shared-types';
 import logger from '#logger';
 import { createRoom, deleteRoom, addMemberToRoom, removeMemberFromRoom, getRoom, setUserRoom, clearUserRoom } from '../../../services/room_list_redis';
 import { publishRoomReaction } from '../../../services/room_reaction_redis';
 import { publishRoomDeviceState } from '../../../services/room_device_state_redis';
 import { publishRoomChat } from '../../../services/room_chat_redis';
 import { publishRoomNotice } from '../../../services/room_notice_redis';
-import * as roomMembership from '../../room_membership';
 import * as roomSocketRegistry from '../../room_socket_registry';
 
 type RoomCreateMessage = Extract<WsClientMessage, { event: 'room:create' }>;
@@ -31,66 +30,62 @@ export const handleRoomCreate = (ws: AuthenticatedWebSocket, msg: RoomCreateMess
         return;
     }
 
-    createRoom({ title: msg.title, subtitle: msg.subtitle, maxSlots: msg.maxSlots, creatorId: ws.user._id })
-        .then((room) => {
-            roomMembership.set(ws.user._id, room.id);
-            roomSocketRegistry.add(room.id, ws);
-            return setUserRoom(ws.user._id, room.id);
-        })
-        .catch((err) => logger.error(err, 'failed to create room'));
+    createRoomAndRegister(ws, msg).catch((err) => logger.error(err, 'failed to create room'));
 };
+
+async function createRoomAndRegister(ws: AuthenticatedWebSocket, msg: RoomCreateMessage): Promise<void> {
+    const room = await createRoom({ title: msg.title, subtitle: msg.subtitle, maxSlots: msg.maxSlots, creatorId: ws.user._id });
+    roomSocketRegistry.add(room.id, ws);
+    await setUserRoom(ws.user._id, room.id);
+}
 
 export const handleRoomDelete = (ws: AuthenticatedWebSocket, msg: RoomDeleteMessage): void => {
-    getRoom(msg.roomId)
-        .then((room) => {
-            if (!room) return;
-            if (room.creator !== ws.user._id) {
-                sendError(ws, 'Somente quem criou a sala pode excluí-la');
-                return;
-            }
-            return deleteRoom(msg.roomId).then(() => {
-                roomSocketRegistry.clear(msg.roomId);
-                return Promise.all(room.members.map((memberId) => clearUserRoom(memberId)));
-            });
-        })
-        .catch((err) => logger.error(err, 'failed to delete room'));
+    deleteRoomIfOwner(ws, msg).catch((err) => logger.error(err, 'failed to delete room'));
 };
+
+async function deleteRoomIfOwner(ws: AuthenticatedWebSocket, msg: RoomDeleteMessage): Promise<void> {
+    const room = await getRoom(msg.roomId);
+    if (!room) return;
+    if (room.creator !== ws.user._id) {
+        sendError(ws, 'Somente quem criou a sala pode excluí-la');
+        return;
+    }
+
+    await deleteRoom(msg.roomId);
+    roomSocketRegistry.clear(msg.roomId);
+    await Promise.all(room.members.map((memberId) => clearUserRoom(memberId)));
+}
 
 export const handleRoomJoin = (ws: AuthenticatedWebSocket, msg: RoomJoinMessage): void => {
-    addMemberToRoom(msg.roomId, ws.user._id)
-        .then((result) => {
-            if (!result.ok) {
-                sendError(ws, result.reason === 'full' ? 'A sala está cheia' : 'Sala não encontrada');
-                return;
-            }
-            // Healing (membership/registry/user-room) happens on every join,
-            // including repeats -- RoomPage.tsx's room:join effect deliberately
-            // resends until its local state reflects membership, and that resend
-            // is otherwise a no-op against Redis (see addMemberToRoom). Only a
-            // genuinely new join gets a notice, or every resend would post a
-            // duplicate "entrou na sala" message.
-            roomMembership.set(ws.user._id, msg.roomId);
-            roomSocketRegistry.add(msg.roomId, ws);
-            return setUserRoom(ws.user._id, msg.roomId).then(() => {
-                if (result.alreadyMember) return;
-                return publishRoomNotice({ roomId: msg.roomId, userId: ws.user._id, userName: displayName(ws), type: 'join' });
-            });
-        })
-        .catch((err) => logger.error(err, 'failed to join room'));
+    joinRoom(ws, msg).catch((err) => logger.error(err, 'failed to join room'));
 };
 
+async function joinRoom(ws: AuthenticatedWebSocket, msg: RoomJoinMessage): Promise<void> {
+    const result = await addMemberToRoom(msg.roomId, ws.user._id);
+    if (!result.ok) {
+        sendError(ws, result.reason === 'full' ? 'A sala está cheia' : 'Sala não encontrada');
+        return;
+    }
+
+    roomSocketRegistry.add(msg.roomId, ws);
+    await setUserRoom(ws.user._id, msg.roomId);
+    if (result.alreadyMember) return;
+
+    await publishRoomNotice({ roomId: msg.roomId, userId: ws.user._id, userName: displayName(ws), type: 'join' });
+}
+
 export const handleRoomLeave = (ws: AuthenticatedWebSocket, msg: RoomLeaveMessage): void => {
-    removeMemberFromRoom(msg.roomId, ws.user._id)
-        .then((removed) => {
-            roomMembership.remove(ws.user._id);
-            roomSocketRegistry.remove(msg.roomId, ws);
-            return clearUserRoom(ws.user._id).then(() => {
-                if (!removed) return;
-                return publishRoomNotice({ roomId: msg.roomId, userId: ws.user._id, userName: displayName(ws), type: 'leave' });
-            });
-        })
-        .catch((err) => logger.error(err, 'failed to leave room'));
+    leaveRoom(ws, msg).catch((err) => logger.error(err, 'failed to leave room'));
 };
+
+async function leaveRoom(ws: AuthenticatedWebSocket, msg: RoomLeaveMessage): Promise<void> {
+    const removed = await removeMemberFromRoom(msg.roomId, ws.user._id);
+    roomSocketRegistry.remove(msg.roomId, ws);
+    await clearUserRoom(ws.user._id);
+    if (!removed) return;
+
+    await publishRoomNotice({ roomId: msg.roomId, userId: ws.user._id, userName: displayName(ws), type: 'leave' });
+}
 
 export const handleRoomReaction = (ws: AuthenticatedWebSocket, msg: RoomReactionMessage): void => {
     if (!(ROOM_REACTION_EMOJIS as readonly string[]).includes(msg.emoji)) {
@@ -98,25 +93,19 @@ export const handleRoomReaction = (ws: AuthenticatedWebSocket, msg: RoomReaction
         return;
     }
 
-    // Checked against Redis (the authoritative room state) rather than the
-    // in-memory roomMembership map: that map only reflects joins this exact
-    // process has handled, so it goes stale on every restart/redeploy while
-    // a client's socket just reconnects without resending room:join (it only
-    // does that when its own local room state says it isn't a member yet).
-    getRoom(msg.roomId)
-        .then((room) => {
-            if (!room || !room.members.includes(ws.user._id)) {
-                sendError(ws, 'Você não está nesta sala');
-                return;
-            }
-            // Opportunistically re-heals roomSocketRegistry: it's pure
-            // in-memory state, so it goes empty across a restart while this
-            // socket's Redis membership (just checked above) doesn't.
-            roomSocketRegistry.add(msg.roomId, ws);
-            return publishRoomReaction({ roomId: msg.roomId, userId: ws.user._id, emoji: msg.emoji });
-        })
-        .catch((err) => logger.error(err, 'failed to publish room reaction'));
+    reactInRoom(ws, msg).catch((err) => logger.error(err, 'failed to publish room reaction'));
 };
+
+async function reactInRoom(ws: AuthenticatedWebSocket, msg: RoomReactionMessage): Promise<void> {
+    const room = await getRoom(msg.roomId);
+    if (!room || !room.members.includes(ws.user._id)) {
+        sendError(ws, 'Você não está nesta sala');
+        return;
+    }
+
+    roomSocketRegistry.add(msg.roomId, ws);
+    await publishRoomReaction({ roomId: msg.roomId, userId: ws.user._id, emoji: msg.emoji });
+}
 
 export const handleRoomDeviceState = (ws: AuthenticatedWebSocket, msg: RoomDeviceStateMessage): void => {
     if (typeof msg.microphoneOn !== 'boolean' || typeof msg.cameraOn !== 'boolean') {
@@ -124,22 +113,24 @@ export const handleRoomDeviceState = (ws: AuthenticatedWebSocket, msg: RoomDevic
         return;
     }
 
-    getRoom(msg.roomId)
-        .then((room) => {
-            if (!room || !room.members.includes(ws.user._id)) {
-                sendError(ws, 'Você não está nesta sala');
-                return;
-            }
-            roomSocketRegistry.add(msg.roomId, ws);
-            return publishRoomDeviceState({
-                roomId: msg.roomId,
-                userId: ws.user._id,
-                microphoneOn: msg.microphoneOn,
-                cameraOn: msg.cameraOn,
-            });
-        })
-        .catch((err) => logger.error(err, 'failed to publish room device state'));
+    updateDeviceState(ws, msg).catch((err) => logger.error(err, 'failed to publish room device state'));
 };
+
+async function updateDeviceState(ws: AuthenticatedWebSocket, msg: RoomDeviceStateMessage): Promise<void> {
+    const room = await getRoom(msg.roomId);
+    if (!room || !room.members.includes(ws.user._id)) {
+        sendError(ws, 'Você não está nesta sala');
+        return;
+    }
+
+    roomSocketRegistry.add(msg.roomId, ws);
+    await publishRoomDeviceState({
+        roomId: msg.roomId,
+        userId: ws.user._id,
+        microphoneOn: msg.microphoneOn,
+        cameraOn: msg.cameraOn,
+    });
+}
 
 export const handleRoomChat = (ws: AuthenticatedWebSocket, msg: RoomChatMessage): void => {
     if (typeof msg.text !== 'string' || !msg.text.trim() || msg.text.length > MAX_CHAT_TEXT_LENGTH) {
@@ -147,14 +138,16 @@ export const handleRoomChat = (ws: AuthenticatedWebSocket, msg: RoomChatMessage)
         return;
     }
 
-    getRoom(msg.roomId)
-        .then((room) => {
-            if (!room || !room.members.includes(ws.user._id)) {
-                sendError(ws, 'Você não está nesta sala');
-                return;
-            }
-            roomSocketRegistry.add(msg.roomId, ws);
-            return publishRoomChat({ roomId: msg.roomId, userId: ws.user._id, text: msg.text.trim() });
-        })
-        .catch((err) => logger.error(err, 'failed to publish room chat'));
+    sendChatMessage(ws, msg).catch((err) => logger.error(err, 'failed to publish room chat'));
 };
+
+async function sendChatMessage(ws: AuthenticatedWebSocket, msg: RoomChatMessage): Promise<void> {
+    const room = await getRoom(msg.roomId);
+    if (!room || !room.members.includes(ws.user._id)) {
+        sendError(ws, 'Você não está nesta sala');
+        return;
+    }
+
+    roomSocketRegistry.add(msg.roomId, ws);
+    await publishRoomChat({ roomId: msg.roomId, userId: ws.user._id, text: msg.text.trim() });
+}

@@ -82,15 +82,12 @@ export const ScreenPainel: React.FC<ScreenPainelProps> = ({
               if (!member) return null;
 
               const isUserMuted = isCurrent ? isMuted : member.microphoneOn === false;
-              const isUserCam = isCurrent ? isCameraOn : (member.cameraOn ?? false);
 
               return (
                 <RoomMember
                   key={id}
                   member={member}
-                  isCurrent={isCurrent}
                   isUserMuted={isUserMuted}
-                  isUserCam={isUserCam}
                   activeReactions={activeReactions}
                   onSelectMember={(m) => onSelectMember && onSelectMember(m)}
                   onFollow={onFollow}

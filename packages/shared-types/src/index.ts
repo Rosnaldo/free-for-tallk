@@ -136,7 +136,7 @@ export interface OnlineUser {
   email: string;
   avatar?: string;
   state: 'SP';
-  status: 'online';
+  status: 'online' | 'disconnecting';
   initials: string;
   hearts: number;
   role: keyof typeof UserRole;

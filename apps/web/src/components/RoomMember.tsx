@@ -1,11 +1,17 @@
 import React from 'react';
-import { MicOff } from 'lucide-react';
+import { MicOff, WifiOff } from 'lucide-react';
 import { HeartCounter } from './HeartCounter';
-import { OnlineUser } from '@repo/shared-types';
 import { getInitials } from '../utils/helpers';
-import type { ReactionParticle } from '../states/local/reactions/state';
+import { OnlineUser } from '@repo/shared-types';
 
-export type { ReactionParticle };
+export interface ReactionParticle {
+  id: string;
+  userId: string;
+  emoji: string;
+  tx: number;
+  delayMs: number;
+  sizeRem: number;
+}
 
 export interface RoomMemberProps {
   member: OnlineUser;
@@ -25,7 +31,6 @@ export interface RoomMemberProps {
 export const RoomMember: React.FC<RoomMemberProps> = ({
   member,
   isCurrent = false,
-  isUserCam = false,
   isUserMuted = false,
   activeReactions = [],
   onSelectMember,
@@ -38,6 +43,7 @@ export const RoomMember: React.FC<RoomMemberProps> = ({
 }) => {
   const memberReactions = activeReactions.filter((r) => r.userId === member.id);
   const followingCount = member.hearts ?? 0;
+  const isDisconnecting = member.status === 'disconnecting';
 
   const handleFollow = () => {
     if (onFollow) {
@@ -66,16 +72,15 @@ export const RoomMember: React.FC<RoomMemberProps> = ({
     >
       {/* Avatar Circle with Status Badges and Reactions */}
       <div className="relative">
-        {/* Active Multiple Reaction Particles Burst beside Avatar */}
+        {/* Active Reaction Particle floating above & to the side of Avatar */}
         {memberReactions.map((r) => (
           <div
             key={r.id}
             style={{
-              ['--tx' as any]: `${r.tx}px`,
               animationDelay: `${r.delayMs}ms`,
               fontSize: `${r.sizeRem}rem`,
             }}
-            className="reaction-particle absolute -top-4 -right-1 z-30 pointer-events-none flex items-center justify-center select-none"
+            className="reaction-particle absolute -top-3 -right-2 z-30 pointer-events-none flex items-center justify-center select-none drop-shadow-md"
           >
             <span>{r.emoji}</span>
           </div>
@@ -84,7 +89,13 @@ export const RoomMember: React.FC<RoomMemberProps> = ({
         {/* Clickable Avatar Container */}
         <div
           onClick={onSelectMember ? () => onSelectMember(member) : undefined}
-          title={onSelectMember ? `Ver transmissão de ${member.name}` : undefined}
+          title={
+            isDisconnecting
+              ? `${member.name} (Desconectando...)`
+              : onSelectMember
+              ? `Ver transmissão de ${member.name}`
+              : undefined
+          }
           role={onSelectMember ? 'button' : undefined}
           tabIndex={onSelectMember ? 0 : undefined}
           onKeyDown={
@@ -103,7 +114,11 @@ export const RoomMember: React.FC<RoomMemberProps> = ({
         >
           {member.avatar ? (
             <div
-              className={`${avatarSizeClasses} rounded-full overflow-hidden transition-all duration-300 shadow-xl border-2 border-transparent group-hover:border-amber-500/50`}
+              className={`${avatarSizeClasses} rounded-full overflow-hidden transition-all duration-300 shadow-xl border-2 ${
+                isDisconnecting
+                  ? 'border-rose-500/90 opacity-75 grayscale-[25%]'
+                  : 'border-transparent group-hover:border-amber-500/50'
+              }`}
             >
               <img
                 src={member.avatar}
@@ -114,7 +129,11 @@ export const RoomMember: React.FC<RoomMemberProps> = ({
             </div>
           ) : (
             <div
-              className={`${avatarSizeClasses} rounded-full flex flex-col items-center justify-center transition-all duration-300 shadow-xl bg-white/10 border border-white/20 group-hover:border-amber-500/50`}
+              className={`${avatarSizeClasses} rounded-full flex flex-col items-center justify-center transition-all duration-300 shadow-xl ${
+                isDisconnecting
+                  ? 'bg-rose-950/40 border-2 border-rose-500/90 opacity-75'
+                  : 'bg-white/10 border border-white/20 group-hover:border-amber-500/50'
+              }`}
             >
               <span className={`text-white font-bold leading-none ${initialsTextClasses}`}>
                 {getInitials(member.name)}
@@ -128,8 +147,19 @@ export const RoomMember: React.FC<RoomMemberProps> = ({
           )}
         </div>
 
+        {/* Disconnecting tag badge on avatar */}
+        {isDisconnecting && (
+          <div
+            title="Desconectando..."
+            className="absolute -top-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-rose-950/95 border border-rose-500/80 text-[9px] font-semibold text-rose-300 flex items-center gap-1 shadow-lg pointer-events-none z-20 whitespace-nowrap animate-pulse"
+          >
+            <WifiOff className="w-2.5 h-2.5 text-rose-400 shrink-0" />
+            <span>Desconectando</span>
+          </div>
+        )}
+
         {/* Mute badge */}
-        {isUserMuted && (
+        {isUserMuted && !isDisconnecting && (
           <div className="absolute bottom-0 right-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center shadow pointer-events-none">
             <MicOff className="w-3.5 h-3.5 text-white" />
           </div>
@@ -138,7 +168,7 @@ export const RoomMember: React.FC<RoomMemberProps> = ({
 
       {/* Member Name */}
       {showName && (
-        <div className="mt-2.5 text-center">
+        <div className="mt-2.5 text-center flex flex-col items-center">
           <p className="text-white font-medium text-sm flex items-center justify-center gap-1">
             <span>{member.name}</span>
             {isCurrent && <span className="text-[10px] text-amber-500 font-normal">(You)</span>}
