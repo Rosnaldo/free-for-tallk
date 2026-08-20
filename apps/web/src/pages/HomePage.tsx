@@ -76,7 +76,7 @@ export const HomePage: React.FC = () => {
           id="toast-notification"
           className="fixed top-20 right-6 z-[70] px-4 py-2.5 rounded-2xl bg-black border border-white/20 text-white text-xs font-semibold shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200"
         >
-          <CheckCircle className="w-4 h-4 text-amber-500" />
+          <CheckCircle className="w-4 h-4 text-amber-400" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -96,7 +96,7 @@ export const HomePage: React.FC = () => {
           {/* Bento Grid Rooms Section */}
           {isPreloading && rooms.length === 0 ? (
             <div className="relative z-10 flex flex-col items-center justify-center p-16 text-center">
-              <Loader2 className="w-8 h-8 text-amber-500 animate-spin mb-3" />
+              <Loader2 className="w-8 h-8 text-amber-400 animate-spin mb-3" />
               <p className="text-xs font-semibold text-white/70">Carregando salas...</p>
             </div>
           ) : rooms.length === 0 ? (

@@ -197,7 +197,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
     >
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="absolute top-16 right-6 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black border border-amber-500/50 text-amber-200 text-xs font-semibold shadow-xl shadow-black/80 animate-in fade-in slide-in-from-top-2 duration-200 pointer-events-none">
+        <div className="absolute top-16 right-6 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black border border-amber-400/50 text-amber-400 text-xs font-semibold shadow-xl shadow-black/80 animate-in fade-in slide-in-from-top-2 duration-200 pointer-events-none">
           <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
@@ -289,7 +289,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
 
                       {/* Camera badge for user */}
                       {isUserCam && (
-                        <div className="absolute top-0 left-0 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center shadow">
+                        <div className="absolute top-0 left-0 w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center shadow">
                           <Video className="w-3.5 h-3.5 text-black" />
                         </div>
                       )}
@@ -376,7 +376,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
                 aria-label={!isMuted ? 'Desativar Microfone' : 'Ativar Microfone'}
                 className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 ${
                   !isMuted
-                    ? 'bg-amber-500 hover:bg-amber-400'
+                    ? 'bg-amber-400'
                     : 'bg-black hover:bg-white/10 border border-white/20 text-white/70'
                 }`}
               >
@@ -391,7 +391,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
                 aria-label={isCameraOn ? 'Desativar Câmera' : 'Ativar Câmera'}
                 className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 ${
                   isCameraOn
-                    ? 'bg-amber-500 hover:bg-amber-400'
+                    ? 'bg-amber-400'
                     : 'bg-black hover:bg-white/10 border border-white/20 text-white/70'
                 }`}
               >
@@ -406,7 +406,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
                 aria-label={!isDeafened ? 'Silenciar Áudio' : 'Ativar Áudio'}
                 className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 ${
                   !isDeafened
-                    ? 'bg-amber-500 hover:bg-amber-400'
+                    ? 'bg-amber-400'
                     : 'bg-black hover:bg-white/10 border border-white/20 text-white/70'
                 }`}
               >
@@ -421,7 +421,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
                 aria-label={showChatOnMobile ? 'Ver Palco' : 'Ver Chat'}
                 className={`sm:hidden w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 ${
                   showChatOnMobile
-                    ? 'bg-amber-500 hover:bg-amber-400'
+                    ? 'bg-amber-400'
                     : 'bg-black hover:bg-white/10 border border-white/20 text-white/70'
                 }`}
               >
@@ -503,7 +503,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
                     <div
                       className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
                         isMe
-                          ? 'bg-amber-500 text-black font-medium rounded-br-none'
+                          ? 'bg-amber-400 text-black font-medium rounded-br-none'
                           : 'bg-white/10 text-white border border-white/20 rounded-bl-none'
                       }`}
                     >
@@ -525,7 +525,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Digite uma mensagem..."
-                className="flex-1 bg-white/5 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-500 transition-colors"
+                className="flex-1 bg-white/5 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400 transition-colors"
               />
               <button
                 id="stage-chat-send-btn"
@@ -533,7 +533,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
                 disabled={!inputText.trim()}
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shrink-0 shadow ${
                   inputText.trim()
-                    ? 'bg-amber-500 hover:bg-amber-400 text-black cursor-pointer'
+                    ? 'bg-amber-400 text-black cursor-pointer'
                     : 'bg-black border border-white/20 text-white/40 opacity-60 cursor-not-allowed'
                 }`}
                 title="Enviar mensagem"

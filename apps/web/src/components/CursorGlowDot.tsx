@@ -26,8 +26,8 @@ export const CursorGlowDot: React.FC<CursorGlowDotProps> = ({ isModalOpen }) => 
         xmlns="http://www.w3.org/2000/svg"
         style={{ transform: 'translate3d(-100px, -100px, 0)', opacity: 0 }}
       >
-        {/* Solid clean amber/yellow circle matching the site's accent color (amber-500) */}
-        <circle cx="50" cy="50" r="50" fill="#f59e0b" />
+        {/* Solid clean amber/yellow circle matching the site's accent color (amber-400) */}
+        <circle cx="50" cy="50" r="50" fill="#fbbf24" />
       </svg>
     </div>
   );

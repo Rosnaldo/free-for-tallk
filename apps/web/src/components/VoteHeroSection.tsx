@@ -30,7 +30,7 @@ export const VoteHeroSection: React.FC<VoteHeroSectionProps> = ({
           id="hero-create-room-btn"
           type="button"
           onClick={onCreateRoom}
-          className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition-colors active:scale-95 cursor-pointer"
+          className="px-5 py-2.5 rounded-xl bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition-colors active:scale-95 cursor-pointer"
         >
           Criar Sala
         </button>

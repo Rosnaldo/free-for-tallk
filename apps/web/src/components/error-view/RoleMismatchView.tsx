@@ -26,14 +26,14 @@ export const RoleMismatchView: React.FC<RoleMismatchViewProps> = ({
   const secondaryButtonLabel = 'Trocar de Conta';
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans flex flex-col selection:bg-amber-500 selection:text-black">
+    <div className="min-h-screen bg-black text-white font-sans flex flex-col selection:bg-amber-400 selection:text-black">
       <Header />
       <main className="flex-grow max-w-4xl w-full mx-auto px-6 md:px-12 py-4 md:py-6 flex flex-col gap-6">
         <div
           id="role-mismatch-box-volunteer"
           className="bg-zinc-950 rounded-3xl border border-zinc-900 p-6 sm:p-10 flex flex-col items-center text-center gap-4 mt-8"
         >
-          <div className="w-14 h-14 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 border border-amber-500/20">
+          <div className="w-14 h-14 bg-amber-400/10 rounded-full flex items-center justify-center text-amber-400 border border-amber-400/20">
             <Radio className="w-7 h-7 animate-pulse" />
           </div>
           <div>
@@ -46,7 +46,7 @@ export const RoleMismatchView: React.FC<RoleMismatchViewProps> = ({
             <button
               id="role-nav-other-btn-volunteer"
               onClick={() => navigate('/')}
-              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-lg transition shadow-md cursor-pointer"
+              className="px-4 py-2 bg-amber-400 text-white font-semibold text-xs rounded-lg transition shadow-md cursor-pointer"
             >
               {primaryButtonLabel}
             </button>

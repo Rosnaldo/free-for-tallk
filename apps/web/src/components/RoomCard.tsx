@@ -114,7 +114,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
             id={`room-btn-talk-${room.id}`}
             onClick={() => onJoin(room)}
             className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${
-              'hover:bg-amber-500 text-white-300 hover:text-black border border-white-300 hover:border-amber-500'
+              'hover:bg-amber-400 text-white-300 hover:text-black border border-white-300 hover:border-amber-400'
             }`}
           >
             <Phone className="w-3.5 h-3.5" />

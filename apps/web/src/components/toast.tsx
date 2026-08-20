@@ -41,10 +41,10 @@ export const mytoast = Object.assign(
     warn: (message: string, options?: Parameters<typeof sonnerToast>[1]) =>
       sonnerToast.warning('Atenção:', {
         ...options,
-        icon: <AlertTriangleIcon className="w-5 h-5 text-amber-500" />,
+        icon: <AlertTriangleIcon className="w-5 h-5 text-amber-400" />,
         description: message,
         classNames: {
-            title: '!text-amber-500',
+            title: '!text-amber-400',
         },
         cancel: {
             label: 'Cancelar',

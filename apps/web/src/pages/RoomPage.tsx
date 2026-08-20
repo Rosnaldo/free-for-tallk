@@ -47,7 +47,7 @@ export const RoomPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-sans relative p-4">
         <div className="max-w-md w-full p-8 rounded-3xl bg-black border border-white/20 text-center shadow-2xl relative z-10 space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
+          <div className="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center mx-auto text-amber-400">
             <AlertCircle className="w-6 h-6" />
           </div>
           <h2 className="text-lg font-bold text-white">Sala não encontrada</h2>
@@ -59,7 +59,7 @@ export const RoomPage: React.FC = () => {
               setActiveRoomId(null);
               navigate('/');
             }}
-            className="mt-2 w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-500/20 active:scale-95"
+            className="mt-2 w-full py-3 rounded-xl bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-400/20 active:scale-95"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Voltar para o início</span>
@@ -71,7 +71,7 @@ export const RoomPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-amber-500 selection:text-black relative">
+    <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-amber-400 selection:text-black relative">
       <RoomView
         room={activeRoom}
         currentUser={currentUser!}

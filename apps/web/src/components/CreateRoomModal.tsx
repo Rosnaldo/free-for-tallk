@@ -116,7 +116,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({
                 placeholder="ex: Bate-papo Aberto"
                 required
                 autoFocus
-                className="w-full bg-white/5 border border-white/20 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-500 transition-colors"
+                className="w-full bg-white/5 border border-white/20 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400 transition-colors"
               />
             </div>
 
@@ -132,14 +132,14 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({
                 value={subtitle}
                 onChange={(e) => setSubtitle(e.target.value)}
                 placeholder="ex: Conversa sobre o dia a dia"
-                className="w-full bg-white/5 border border-white/20 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-500 transition-colors"
+                className="w-full bg-white/5 border border-white/20 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400 transition-colors"
               />
             </div>
 
             {/* Custom Styled Max Capacity Dropdown */}
             <div className="relative" ref={capacityDropdownRef}>
               <label className="block text-xs font-bold text-white uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                <Users className="w-3.5 h-3.5 text-amber-500" />
+                <Users className="w-3.5 h-3.5 text-amber-400" />
                 <span>Capacidade Máxima</span>
               </label>
 
@@ -152,7 +152,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({
                 aria-expanded={isCapacityOpen}
                 className={`w-full flex items-center justify-between bg-white/5 border rounded-xl px-3.5 py-2.5 text-xs text-white transition-all cursor-pointer ${
                   isCapacityOpen
-                    ? 'border-amber-500 bg-white/10 ring-1 ring-amber-500/30'
+                    ? 'border-amber-400 bg-white/10 ring-1 ring-amber-400/30'
                     : 'border-white/20 hover:border-white/40'
                 }`}
               >
@@ -166,7 +166,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({
                 </div>
                 <ChevronDown
                   className={`w-4 h-4 text-white/60 transition-transform duration-200 ${
-                    isCapacityOpen ? 'rotate-180 text-amber-500' : ''
+                    isCapacityOpen ? 'rotate-180 text-amber-400' : ''
                   }`}
                 />
               </button>
@@ -190,14 +190,14 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({
                           onClick={() => selectCapacity(slots)}
                           className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer ${
                             isSelected
-                              ? 'bg-amber-500 text-black font-bold shadow'
+                              ? 'bg-amber-400 text-black font-bold shadow'
                               : 'text-white/80 hover:text-white hover:bg-white/10'
                           }`}
                         >
                           <div className="flex items-center gap-2">
                             <Users
                               className={`w-3.5 h-3.5 ${
-                                isSelected ? 'text-black' : 'text-amber-500'
+                                isSelected ? 'text-black' : 'text-amber-400'
                               }`}
                             />
                             <span>
@@ -221,7 +221,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({
               <button
                 id="submit-create-room-btn"
                 type="submit"
-                className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-500/90 text-black font-bold text-xs uppercase tracking-wider transition-opacity flex items-center justify-center cursor-pointer active:scale-95"
+                className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-400/90 text-black font-bold text-xs uppercase tracking-wider transition-opacity flex items-center justify-center cursor-pointer active:scale-95"
               >
                 Criar Sala
               </button>

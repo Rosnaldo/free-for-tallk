@@ -64,8 +64,8 @@ export const UserBadge: React.FC<UserBadgeProps> = ({
                 {currentUser.name}
               </p>
               <p className="text-[10px] flex items-center gap-1 mt-0.5">
-                <Heart className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
-                <span className="font-semibold text-amber-500">{currentUser.hearts || 0}</span>
+                <Heart className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                <span className="font-semibold text-amber-400">{currentUser.hearts || 0}</span>
               </p>
             </div>
 
@@ -77,7 +77,7 @@ export const UserBadge: React.FC<UserBadgeProps> = ({
                 className="w-8 h-8 rounded-full object-cover shadow-sm"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-xs font-bold text-black shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center text-xs font-bold text-black shadow-sm">
                 {getInitials(currentUser.name)}
               </div>
             )}
@@ -112,8 +112,8 @@ export const UserBadge: React.FC<UserBadgeProps> = ({
               <div className="px-3 py-2 border-b border-white/15 mb-1">
                 <p className="text-xs font-bold text-white truncate">{currentUser.name}</p>
                 <p className="text-[10px] truncate mt-0.5 flex items-center gap-1">
-                  <Heart className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
-                  <span className="font-semibold text-amber-500">{currentUser.hearts || 0}</span>
+                  <Heart className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                  <span className="font-semibold text-amber-400">{currentUser.hearts || 0}</span>
                 </p>
               </div>
 
@@ -176,9 +176,9 @@ export const UserBadge: React.FC<UserBadgeProps> = ({
                   setDropdownOpen(false);
                   onLogin?.();
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-amber-500 hover:bg-white/10 cursor-pointer transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-amber-400 hover:bg-white/10 cursor-pointer transition-colors"
               >
-                <LogIn className="w-4 h-4 text-amber-500" />
+                <LogIn className="w-4 h-4 text-amber-400" />
                 <span>Entrar</span>
               </button>
             </>
