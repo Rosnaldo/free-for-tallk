@@ -60,7 +60,7 @@ export const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col font-sans relative select-none">
       {/* Dynamic Cursor Glowing Yellow Dot (Trailing follow effect) */}
-      <CursorGlowDot />
+      <CursorGlowDot isModalOpen={isCreateModalOpen} />
 
       {/* Subtle Map Outline Vector Backdrop */}
       <BrazilMapBackground />
@@ -90,12 +90,12 @@ export const HomePage: React.FC = () => {
 
           {/* Bento Grid Rooms Section */}
           {isPreloading && rooms.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-16 text-center">
+            <div className="relative z-10 flex flex-col items-center justify-center p-16 text-center">
               <Loader2 className="w-8 h-8 text-amber-500 animate-spin mb-3" />
               <p className="text-xs font-semibold text-white/70">Carregando salas...</p>
             </div>
           ) : rooms.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-white/20 my-8 mb-12">
+            <div className="relative z-10 flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-white/20 my-8 mb-12">
               <Users className="w-12 h-12 text-white/40 mb-3" />
               <h3 className="text-base font-bold text-white">Nenhuma sala disponível</h3>
 
