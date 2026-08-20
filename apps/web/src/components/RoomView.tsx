@@ -99,6 +99,9 @@ export const RoomView: React.FC<RoomViewProps> = ({
     };
 
     addMessage(newMsg);
+
+    // Notify other users in the room so their chat panel updates too
+    initWs.send({ event: 'room:chat', roomId: room.id, text: text.trim() });
   };
 
   const sendReaction = (emoji: string) => {

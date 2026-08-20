@@ -58,6 +58,43 @@ export function handleWsMessage(message: WsServerMessage, stores: WsHandlerStore
       }
       break;
     }
+    case 'room:chat': {
+      // The sender already adds their own chat entry instantly on send (see
+      // RoomView.handleSendMessage) -- this only needs to do the same for
+      // everyone else in the room.
+      const currentUserId = stores.currentUserStore.getState().currentUser?.id;
+      if (message.userId !== currentUserId) {
+        const sender = stores.onlineUserListStore.getState().onlineUsers.find((u) => u.id === message.userId);
+        const chatMsg: IChatMessage = {
+          id: `msg-${message.userId}-${Date.now()}`,
+          roomId: message.roomId,
+          userId: message.userId,
+          userName: sender?.name ?? 'Alguém',
+          userAvatar: sender?.avatar,
+          text: message.text,
+          timestamp: Date.now(),
+          type: 'text',
+        };
+        stores.chatStore.getState().addMessage(chatMsg);
+      }
+      break;
+    }
+    case 'room:notice': {
+      // Broadcast to every member (including the one who joined/left) since
+      // there's no responsiveness-sensitive local echo to race here, unlike
+      // chat/reaction.
+      const noticeMsg: IChatMessage = {
+        id: `notice-${message.userId}-${Date.now()}`,
+        roomId: message.roomId,
+        userId: message.userId,
+        userName: message.userName,
+        text: message.type === 'join' ? `${message.userName} entrou na sala` : `${message.userName} saiu da sala`,
+        timestamp: Date.now(),
+        type: 'system',
+      };
+      stores.chatStore.getState().addMessage(noticeMsg);
+      break;
+    }
     case 'room:device-state': {
       // The sender already reflects their own mic/camera state from the
       // local devices store (see RoomView) -- this only needs to update how

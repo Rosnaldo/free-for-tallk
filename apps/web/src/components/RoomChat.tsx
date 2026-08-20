@@ -39,10 +39,10 @@ export const RoomChat: React.FC<RoomChatProps> = ({
       <div className="p-3.5 border-b border-white/20 flex items-center justify-between bg-white/5">
         <div className="flex items-center gap-2">
           <MessageSquare className="w-4 h-4 text-amber-500" />
-          <span className="text-xs font-bold text-white">Room Chat</span>
+          <span className="text-xs font-bold text-white">Chat da Sala</span>
         </div>
         <span className="text-[11px] text-white/60">
-          {messages.length} messages
+          {messages.length} mensagens
         </span>
       </div>
 
@@ -51,8 +51,8 @@ export const RoomChat: React.FC<RoomChatProps> = ({
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-4 text-white/50 text-xs">
             <Coffee className="w-8 h-8 opacity-40 mb-2" />
-            <p>No messages yet.</p>
-            <p className="text-[11px] mt-1 text-white/40">Say hi to everyone in the lounge!</p>
+            <p>Nenhuma mensagem ainda.</p>
+            <p className="text-[11px] mt-1 text-white/40">Diga oi para todo mundo no lounge!</p>
           </div>
         ) : (
           messages.map((msg) => {
@@ -86,7 +86,7 @@ export const RoomChat: React.FC<RoomChatProps> = ({
                 className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
               >
                 <span className="text-[10px] text-white/60 mb-0.5 px-1">
-                  {isMe ? 'You' : msg.userName}
+                  {isMe ? 'Você' : msg.userName}
                 </span>
                 <div
                   className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
@@ -112,7 +112,7 @@ export const RoomChat: React.FC<RoomChatProps> = ({
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Type a message..."
+            placeholder="Digite uma mensagem..."
             className="flex-1 bg-white/5 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-500 transition-colors"
           />
           <button
@@ -124,7 +124,7 @@ export const RoomChat: React.FC<RoomChatProps> = ({
                 ? 'bg-amber-500 hover:bg-amber-500/90 text-black cursor-pointer'
                 : 'bg-black border border-white/20 text-white/40 opacity-60 cursor-not-allowed'
             }`}
-            title="Send Message"
+            title="Enviar Mensagem"
           >
             <Send className="w-3.5 h-3.5" />
           </button>

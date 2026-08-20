@@ -1,5 +1,5 @@
 import type Redis from 'ioredis';
-import { REDIS_CHANNELS, SOCKET_OPEN, OnlineUserListEvent, RoomListEvent, RoomReactionEvent, RoomDeviceStateEvent, WsServerMessage } from '@repo/shared-types';
+import { REDIS_CHANNELS, SOCKET_OPEN, OnlineUserListEvent, RoomListEvent, RoomReactionEvent, RoomDeviceStateEvent, RoomChatEvent, RoomNoticeEvent, WsServerMessage } from '@repo/shared-types';
 import logger from '#logger';
 import { getRedisClient } from './singleton';
 import { addOnlineUser as addOnlineUserPresence, removeOnlineUser as removeOnlineUserPresence, patchOnlineUserIfPresent } from '../services/online_list_redis';
@@ -7,6 +7,8 @@ import * as onlineRegistry from '../websocket/user_registry';
 import { broadcastRoomDelta } from '../websocket/broadcast_room_delta';
 import { broadcastRoomReaction } from '../websocket/broadcast_room_reaction';
 import { broadcastRoomDeviceState } from '../websocket/broadcast_room_device_state';
+import { broadcastRoomChat } from '../websocket/broadcast_room_chat';
+import { broadcastRoomNotice } from '../websocket/broadcast_room_notice';
 
 let subscriber: Redis | undefined;
 
@@ -69,6 +71,30 @@ function handleRoomDeviceStateEvent(raw: string): void {
     broadcastRoomDeviceState(event);
 }
 
+function handleRoomChatEvent(raw: string): void {
+    let event: RoomChatEvent;
+    try {
+        event = JSON.parse(raw);
+    } catch (err) {
+        logger.error(err, 'failed to parse room chat event');
+        return;
+    }
+
+    broadcastRoomChat(event);
+}
+
+function handleRoomNoticeEvent(raw: string): void {
+    let event: RoomNoticeEvent;
+    try {
+        event = JSON.parse(raw);
+    } catch (err) {
+        logger.error(err, 'failed to parse room notice event');
+        return;
+    }
+
+    broadcastRoomNotice(event);
+}
+
 interface WsDeliverEvent {
     id: string;
     message: WsServerMessage;
@@ -110,6 +136,12 @@ export const startListSubscriber = async (): Promise<void> => {
         if (channel === REDIS_CHANNELS.ROOM_DEVICE_STATE_UPDATED) {
             handleRoomDeviceStateEvent(message);
         }
+        if (channel === REDIS_CHANNELS.ROOM_CHAT_EMITTED) {
+            handleRoomChatEvent(message);
+        }
+        if (channel === REDIS_CHANNELS.ROOM_NOTICE_EMITTED) {
+            handleRoomNoticeEvent(message);
+        }
     });
 
     await subscriber.subscribe(
@@ -117,9 +149,11 @@ export const startListSubscriber = async (): Promise<void> => {
         REDIS_CHANNELS.ONLINE_USER_WS_DELIVER,
         REDIS_CHANNELS.ROOM_LIST_UPDATED,
         REDIS_CHANNELS.ROOM_REACTION_EMITTED,
-        REDIS_CHANNELS.ROOM_DEVICE_STATE_UPDATED
+        REDIS_CHANNELS.ROOM_DEVICE_STATE_UPDATED,
+        REDIS_CHANNELS.ROOM_CHAT_EMITTED,
+        REDIS_CHANNELS.ROOM_NOTICE_EMITTED
     );
-    logger.info('subscribed to online-list, ws-delivery, room-list, room-reaction, and room-device-state redis channels');
+    logger.info('subscribed to online-list, ws-delivery, room-list, room-reaction, room-device-state, room-chat, and room-notice redis channels');
 };
 
 export const stopListSubscriber = async (): Promise<void> => {

@@ -20,6 +20,16 @@ export const REDIS_CHANNELS = {
   // delivered to that room's members regardless of which instance they're
   // connected to
   ROOM_DEVICE_STATE_UPDATED: "room-device-state:updated",
+
+  // chat message sent in a room, relayed to every instance so it can be
+  // delivered to that room's members regardless of which instance they're
+  // connected to
+  ROOM_CHAT_EMITTED: "room-chat:emitted",
+
+  // user joined/left a room, relayed to every instance so it can be
+  // delivered to that room's members regardless of which instance they're
+  // connected to
+  ROOM_NOTICE_EMITTED: "room-notice:emitted",
 } as const;
 
 // Emojis a client is allowed to react with -- shared so the realtime server
@@ -33,6 +43,12 @@ export type RoomReactionEmoji = typeof ROOM_REACTION_EMOJIS[number];
 export const REDIS_KEYS = {
   ONLINE_USER_PREFIX: "online-user:",
   ROOM_PREFIX: "room:",
+
+  // roomId a user currently belongs to, persisted (unlike the realtime
+  // process's in-memory roomSocketRegistry/roomMembership) so a socket
+  // reconnecting after a restart/redeploy can re-heal its room registration
+  // without depending on the client resending room:join.
+  USER_ROOM_PREFIX: "user-room:",
 } as const;
 
 export type WsServerMessage =
@@ -41,6 +57,8 @@ export type WsServerMessage =
   | { event: "room:delta"; delta: RoomListEvent }
   | { event: "room:reaction"; roomId: string; userId: string; emoji: RoomReactionEmoji }
   | { event: "room:device-state"; roomId: string; userId: string; microphoneOn: boolean; cameraOn: boolean }
+  | { event: "room:chat"; roomId: string; userId: string; text: string }
+  | { event: "room:notice"; roomId: string; userId: string; userName: string; type: "join" | "leave" }
 
 export type WsClientMessage =
   | { event: "ping" }
@@ -51,6 +69,7 @@ export type WsClientMessage =
   | { event: "room:leave"; roomId: string }
   | { event: "room:reaction"; roomId: string; emoji: RoomReactionEmoji }
   | { event: "room:device-state"; roomId: string; microphoneOn: boolean; cameraOn: boolean }
+  | { event: "room:chat"; roomId: string; text: string }
 
 export interface RoomReactionEvent {
   roomId: string;
@@ -63,6 +82,19 @@ export interface RoomDeviceStateEvent {
   userId: string;
   microphoneOn: boolean;
   cameraOn: boolean;
+}
+
+export interface RoomChatEvent {
+  roomId: string;
+  userId: string;
+  text: string;
+}
+
+export interface RoomNoticeEvent {
+  roomId: string;
+  userId: string;
+  userName: string;
+  type: "join" | "leave";
 }
 
 export const UserRole = {
