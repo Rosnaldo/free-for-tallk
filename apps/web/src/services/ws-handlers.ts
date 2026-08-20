@@ -44,5 +44,18 @@ export function handleWsMessage(message: WsServerMessage, stores: WsHandlerStore
       }
       break;
     }
+    case 'room:device-state': {
+      // The sender already reflects their own mic/camera state from the
+      // local devices store (see RoomView) -- this only needs to update how
+      // everyone else in the room sees them.
+      const currentUserId = stores.currentUserStore.getState().currentUser?.id;
+      if (message.userId !== currentUserId) {
+        stores.onlineUserListStore.getState().updateDeviceState(message.userId, {
+          microphoneOn: message.microphoneOn,
+          cameraOn: message.cameraOn,
+        });
+      }
+      break;
+    }
   }
 }

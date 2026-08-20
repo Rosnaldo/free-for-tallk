@@ -1,11 +1,12 @@
 import type Redis from 'ioredis';
-import { REDIS_CHANNELS, SOCKET_OPEN, OnlineUserListEvent, RoomListEvent, RoomReactionEvent, WsServerMessage } from '@repo/shared-types';
+import { REDIS_CHANNELS, SOCKET_OPEN, OnlineUserListEvent, RoomListEvent, RoomReactionEvent, RoomDeviceStateEvent, WsServerMessage } from '@repo/shared-types';
 import logger from '#logger';
 import { getRedisClient } from './singleton';
 import { addOnlineUser as addOnlineUserPresence, removeOnlineUser as removeOnlineUserPresence, patchOnlineUserIfPresent } from '../services/online_list_redis';
 import * as onlineRegistry from '../websocket/user_registry';
 import { broadcastRoomDelta } from '../websocket/broadcast_room_delta';
 import { broadcastRoomReaction } from '../websocket/broadcast_room_reaction';
+import { broadcastRoomDeviceState } from '../websocket/broadcast_room_device_state';
 
 let subscriber: Redis | undefined;
 
@@ -56,6 +57,18 @@ function handleRoomReactionEvent(raw: string): void {
     broadcastRoomReaction(event).catch((err) => logger.error(err, 'failed to broadcast room reaction'));
 }
 
+function handleRoomDeviceStateEvent(raw: string): void {
+    let event: RoomDeviceStateEvent;
+    try {
+        event = JSON.parse(raw);
+    } catch (err) {
+        logger.error(err, 'failed to parse room device state event');
+        return;
+    }
+
+    broadcastRoomDeviceState(event).catch((err) => logger.error(err, 'failed to broadcast room device state'));
+}
+
 interface WsDeliverEvent {
     id: string;
     message: WsServerMessage;
@@ -94,15 +107,19 @@ export const startListSubscriber = async (): Promise<void> => {
         if (channel === REDIS_CHANNELS.ROOM_REACTION_EMITTED) {
             handleRoomReactionEvent(message);
         }
+        if (channel === REDIS_CHANNELS.ROOM_DEVICE_STATE_UPDATED) {
+            handleRoomDeviceStateEvent(message);
+        }
     });
 
     await subscriber.subscribe(
         REDIS_CHANNELS.ONLINE_USER_LIST_UPDATED,
         REDIS_CHANNELS.ONLINE_USER_WS_DELIVER,
         REDIS_CHANNELS.ROOM_LIST_UPDATED,
-        REDIS_CHANNELS.ROOM_REACTION_EMITTED
+        REDIS_CHANNELS.ROOM_REACTION_EMITTED,
+        REDIS_CHANNELS.ROOM_DEVICE_STATE_UPDATED
     );
-    logger.info('subscribed to online-list, ws-delivery, room-list, and room-reaction redis channels');
+    logger.info('subscribed to online-list, ws-delivery, room-list, room-reaction, and room-device-state redis channels');
 };
 
 export const stopListSubscriber = async (): Promise<void> => {

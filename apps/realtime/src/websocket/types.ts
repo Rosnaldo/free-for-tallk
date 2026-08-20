@@ -21,3 +21,4 @@ export type WsClientMessage =
     | { event: 'room:join'; roomId: string }
     | { event: 'room:leave'; roomId: string }
     | { event: 'room:reaction'; roomId: string; emoji: RoomReactionEmoji }
+    | { event: 'room:device-state'; roomId: string; microphoneOn: boolean; cameraOn: boolean }

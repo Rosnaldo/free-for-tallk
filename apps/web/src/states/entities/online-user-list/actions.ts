@@ -6,6 +6,7 @@ export interface OnlineUserListActions {
   setOnlineUsers: (onlineUsers: OnlineUser[]) => void;
   fetchOnlineUsers: () => Promise<void>;
   applyDelta: (event: OnlineUserListEvent) => void;
+  updateDeviceState: (userId: string, patch: Partial<Pick<OnlineUser, 'microphoneOn' | 'cameraOn'>>) => void;
 }
 
 export const createOnlineUserListActions = (
@@ -30,5 +31,10 @@ export const createOnlineUserListActions = (
     } else {
       set({ onlineUsers: get().onlineUsers.filter((v) => v.id !== event.onlineUserId) });
     }
+  },
+  updateDeviceState: (userId, patch) => {
+    set({
+      onlineUsers: get().onlineUsers.map((v) => (v.id === userId ? { ...v, ...patch } : v)),
+    });
   },
 });

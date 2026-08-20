@@ -5,7 +5,7 @@ import { startGracePeriod, cancelGracePeriod } from '../redis/grace_period';
 import { handleClose } from '#websocket/handler/on_close';
 import { handlePong } from '#websocket/handler/on_pong';
 import { handleMessageLogout } from '#websocket/handler/message/logout';
-import { handleRoomCreate, handleRoomDelete, handleRoomJoin, handleRoomLeave, handleRoomReaction } from '#websocket/handler/message/room';
+import { handleRoomCreate, handleRoomDelete, handleRoomJoin, handleRoomLeave, handleRoomReaction, handleRoomDeviceState } from '#websocket/handler/message/room';
 import { clientRegistry } from '#websocket/client_registry';
 import { addOnlineUser } from '../services/online_list_redis';
 import { removeMemberFromRoom } from '../services/room_list_redis';
@@ -54,6 +54,9 @@ export const onConnection = () => async (ws: AuthenticatedWebSocket): Promise<vo
                 break;
             case 'room:reaction':
                 handleRoomReaction(ws, msg);
+                break;
+            case 'room:device-state':
+                handleRoomDeviceState(ws, msg);
                 break;
         }
     });

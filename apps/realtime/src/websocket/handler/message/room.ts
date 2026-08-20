@@ -3,6 +3,7 @@ import { ROOM_REACTION_EMOJIS } from '@repo/shared-types';
 import logger from '#logger';
 import { createRoom, deleteRoom, addMemberToRoom, removeMemberFromRoom, getRoom } from '../../../services/room_list_redis';
 import { publishRoomReaction } from '../../../services/room_reaction_redis';
+import { publishRoomDeviceState } from '../../../services/room_device_state_redis';
 import * as roomMembership from '../../room_membership';
 
 type RoomCreateMessage = Extract<WsClientMessage, { event: 'room:create' }>;
@@ -10,6 +11,7 @@ type RoomDeleteMessage = Extract<WsClientMessage, { event: 'room:delete' }>;
 type RoomJoinMessage = Extract<WsClientMessage, { event: 'room:join' }>;
 type RoomLeaveMessage = Extract<WsClientMessage, { event: 'room:leave' }>;
 type RoomReactionMessage = Extract<WsClientMessage, { event: 'room:reaction' }>;
+type RoomDeviceStateMessage = Extract<WsClientMessage, { event: 'room:device-state' }>;
 
 const sendError = (ws: AuthenticatedWebSocket, message: string): void => {
     ws.send(JSON.stringify({ event: 'error', message }));
@@ -77,4 +79,26 @@ export const handleRoomReaction = (ws: AuthenticatedWebSocket, msg: RoomReaction
             return publishRoomReaction({ roomId: msg.roomId, userId: ws.user._id, emoji: msg.emoji });
         })
         .catch((err) => logger.error(err, 'failed to publish room reaction'));
+};
+
+export const handleRoomDeviceState = (ws: AuthenticatedWebSocket, msg: RoomDeviceStateMessage): void => {
+    if (typeof msg.microphoneOn !== 'boolean' || typeof msg.cameraOn !== 'boolean') {
+        sendError(ws, 'Estado de dispositivo inválido');
+        return;
+    }
+
+    getRoom(msg.roomId)
+        .then((room) => {
+            if (!room || !room.members.includes(ws.user._id)) {
+                sendError(ws, 'Você não está nesta sala');
+                return;
+            }
+            return publishRoomDeviceState({
+                roomId: msg.roomId,
+                userId: ws.user._id,
+                microphoneOn: msg.microphoneOn,
+                cameraOn: msg.cameraOn,
+            });
+        })
+        .catch((err) => logger.error(err, 'failed to publish room device state'));
 };

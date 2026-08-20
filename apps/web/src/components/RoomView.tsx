@@ -57,11 +57,15 @@ export const RoomView: React.FC<RoomViewProps> = ({
   const isCameraOn = cameraOn;
 
   const handleToggleMic = () => {
-    setMicrophoneOn(!microphoneOn);
+    const nextMicrophoneOn = !microphoneOn;
+    setMicrophoneOn(nextMicrophoneOn);
+    initWs.send({ event: 'room:device-state', roomId: room.id, microphoneOn: nextMicrophoneOn, cameraOn });
   };
 
   const handleToggleCamera = () => {
-    setCameraOn(!cameraOn);
+    const nextCameraOn = !cameraOn;
+    setCameraOn(nextCameraOn);
+    initWs.send({ event: 'room:device-state', roomId: room.id, microphoneOn, cameraOn: nextCameraOn });
   };
 
   const handleToggleAudio = () => {

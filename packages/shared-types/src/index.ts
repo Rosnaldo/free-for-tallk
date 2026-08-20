@@ -15,6 +15,11 @@ export const REDIS_CHANNELS = {
   // delivered to that room's members regardless of which instance they're
   // connected to
   ROOM_REACTION_EMITTED: "room-reaction:emitted",
+
+  // mic/camera toggled in a room, relayed to every instance so it can be
+  // delivered to that room's members regardless of which instance they're
+  // connected to
+  ROOM_DEVICE_STATE_UPDATED: "room-device-state:updated",
 } as const;
 
 // Emojis a client is allowed to react with -- shared so the realtime server
@@ -35,6 +40,7 @@ export type WsServerMessage =
   | { event: "online-user:delta"; delta: OnlineUserListEvent }
   | { event: "room:delta"; delta: RoomListEvent }
   | { event: "room:reaction"; roomId: string; userId: string; emoji: RoomReactionEmoji }
+  | { event: "room:device-state"; roomId: string; userId: string; microphoneOn: boolean; cameraOn: boolean }
 
 export type WsClientMessage =
   | { event: "ping" }
@@ -44,11 +50,19 @@ export type WsClientMessage =
   | { event: "room:join"; roomId: string }
   | { event: "room:leave"; roomId: string }
   | { event: "room:reaction"; roomId: string; emoji: RoomReactionEmoji }
+  | { event: "room:device-state"; roomId: string; microphoneOn: boolean; cameraOn: boolean }
 
 export interface RoomReactionEvent {
   roomId: string;
   userId: string;
   emoji: RoomReactionEmoji;
+}
+
+export interface RoomDeviceStateEvent {
+  roomId: string;
+  userId: string;
+  microphoneOn: boolean;
+  cameraOn: boolean;
 }
 
 export const UserRole = {
