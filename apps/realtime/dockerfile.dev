@@ -1,0 +1,12 @@
+ARG NODE_VERSION=24.13.0
+FROM node:${NODE_VERSION}-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates gnupg \
+    && curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/ngrok.gpg \
+    && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" > /etc/apt/sources.list.d/ngrok.list \
+    && apt-get update && apt-get install -y ngrok \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app/apps/realtime
+
+CMD ["npm", "run", "dev"]

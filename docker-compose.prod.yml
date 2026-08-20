@@ -1,0 +1,287 @@
+
+services:
+  nginx-http:
+    image: nginx:latest
+    container_name: nginx-http
+    ports:
+      - "80:80"
+    volumes:
+      - ./apps/nginx/prod/http/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/www:/var/www/certbot
+    networks:
+      - frontend
+      - backend
+
+  nginx-https:
+    image: nginx:latest
+    container_name: nginx-https
+    ports:
+      - "443:443"
+    depends_on:
+      api:
+        condition: service_healthy
+        restart: true
+      realtime:
+        condition: service_healthy
+        restart: true
+      mongo:
+        condition: service_healthy
+        restart: true
+      redis:
+        condition: service_healthy
+        restart: true
+      keycloak:
+        condition: service_healthy
+        restart: true
+      nginx-http:
+        condition: service_started
+    volumes:
+      # Main nginx config
+      - ./apps/nginx/prod/https/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./letsencrypt:/etc/letsencrypt:ro  # certificados
+      - ./certbot/www:/var/www/certbot
+    networks:
+      - frontend
+      - backend
+
+  certbot:
+    image: certbot/certbot:v1.4.0
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./letsencrypt:/etc/letsencrypt
+    depends_on:
+      - nginx-http
+    entrypoint: "/bin/sh -c 'certbot certonly --non-interactive --agree-tos -m $$ADMIN_EMAIL --webroot -w /var/www/certbot -d $$BASE_DOMAIN -d www.$$BASE_DOMAIN'"
+    env_file:
+      - ./apps/nginx/.env.prod
+
+  api:
+    image: api
+    container_name: api
+    build:
+      context: .
+      dockerfile: apps/api/dockerfile.prod
+    expose:
+      - "4000"
+    env_file:
+      - ./apps/api/.env
+      - ./apps/api/.env.prod
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+        restart: true
+      redis:
+        condition: service_healthy
+        restart: true
+      keycloak:
+        condition: service_healthy
+        restart: true
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"const http = require('http'); http.get('http://127.0.0.1:4000/readiness', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend
+      - frontend
+
+  realtime:
+    image: realtime
+    container_name: realtime
+    build:
+      context: .
+      dockerfile: apps/realtime/dockerfile.prod
+    expose:
+      - "5003"
+    env_file:
+      - ./apps/realtime/.env
+      - ./apps/realtime/.env.prod
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+        restart: true
+      redis:
+        condition: service_healthy
+        restart: true
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"const http = require('http'); http.get('http://127.0.0.1:5003/readiness', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend
+      - frontend
+
+  postgres:
+    image: postgres:18rc1
+    pull_policy: always
+    restart: no
+    expose:
+      - "5432"
+    shm_size: 128m
+    env_file :
+      - ./apps/keycloak/.env
+    volumes:
+      - keycloak_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    networks:
+      - backend
+
+  keycloak:
+    container_name: keycloak
+    image: quay.io/keycloak/keycloak:26.4
+    pull_policy: always
+    restart: no
+    expose:
+      - "8080"
+    env_file :
+      - ./apps/keycloak/.env
+      - ./apps/keycloak/.env.production
+    volumes:
+      # Themes customizados
+      - ./apps/keycloak/my-themes:/opt/keycloak/themes
+      - ./apps/keycloak/realm-export.prod.json:/opt/keycloak/data/import/realm-export.json
+    command: [
+      "start",
+      "--spi-theme-cache-themes=false",
+      "--spi-theme-cache-templates=false",
+      "--spi-theme-static-max-age=-1",
+      "--http-port=8080",
+      "--http-enabled=true",
+      "--hostname-strict=false",
+      "--hostname-debug=true",
+      "--health-enabled=true",
+      "--verbose",
+      "--db=postgres",
+      "--db-url=jdbc:postgresql://postgres:5432/$${DB_POSTGRES_SPACE}",
+      "--db-password=$${DB_POSTGRES_PASSWORD}",
+      "--db-username=$${DB_POSTGRES_USER}",
+      "--import-realm",
+    ]
+    depends_on:
+      postgres:
+        condition: service_healthy
+        restart: true
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/9000 && printf 'GET /auth/health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && timeout 5 cat <&3 | grep -q '200'"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    networks:
+      - frontend
+      - backend
+
+  mongo:
+    image: mongo:8.0.14-noble
+    pull_policy: always
+    restart: no
+    ports:
+      - 127.0.0.1:27017:27017
+    env_file:
+      - ./apps/api/.env.prod
+    volumes:
+      - free_for_talk_mongo:/data/db
+    healthcheck:
+      test: [ "CMD-SHELL", "mongosh --quiet --authenticationDatabase admin --username $${MONGO_INITDB_ROOT_USERNAME} --password $${MONGO_INITDB_ROOT_PASSWORD} localhost:27017/test --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    pull_policy: always
+    restart: no
+    command: redis-server --appendonly yes --appendfsync everysec
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - free_for_talk_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend
+
+  loki:
+    image: grafana/loki:3.6.12
+    container_name: loki
+    restart: unless-stopped
+    expose:
+      - "3100"
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - backend
+
+  promtail:
+    image: grafana/promtail:3.6.11
+    container_name: promtail
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      loki:
+        condition: service_started
+    networks:
+      - backend
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      loki:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - frontend
+      - backend
+
+volumes:
+  keycloak_postgres:
+    name: call_center_prod_keycloak_postgres
+  free_for_talk_mongo:
+    name: free_for_talk_prod_mongo
+  free_for_talk_redis:
+    name: free_for_talk_prod_redis
+  loki_data:
+    name: call_center_prod_loki_data
+  grafana_data:
+    name: call_center_prod_grafana_data
+
+networks:
+  frontend:
+  backend:

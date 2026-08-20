@@ -1,0 +1,9 @@
+# A imagem oficial não tem como levar apps/keycloak/my-themes e
+# realm-export.prod.json via bind mount num cluster k8s multi-node genérico
+# (hostPath prenderia o pod a um nó específico) -- por isso, ao contrário do
+# docker-compose.prod.yml (que monta como volume), aqui eles vão embutidos
+# na imagem em build time.
+FROM quay.io/keycloak/keycloak:26.4
+
+COPY --chown=1000:0 apps/keycloak/my-themes /opt/keycloak/themes
+COPY --chown=1000:0 apps/keycloak/realm-export.prod.json /opt/keycloak/data/import/realm-export.json
