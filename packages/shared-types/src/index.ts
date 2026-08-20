@@ -79,6 +79,7 @@ export interface OnlineUser {
   unverified: boolean;
   microphoneOn?: boolean;
   cameraOn?: boolean;
+  isSharingScreen?: boolean;
 }
 
 export interface IChatMessage {
@@ -148,5 +149,6 @@ export function mapUserToOnlineUser(
         unverified: user.unverified,
         microphoneOn: false,
         cameraOn: false,
+        isSharingScreen: false,
     };
 }

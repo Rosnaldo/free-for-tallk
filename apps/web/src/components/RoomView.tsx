@@ -1,33 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  Mic,
-  MicOff,
-  Volume2,
-  VolumeX,
-  Heart,
-  Send,
-  Sparkles,
-  Users,
-  LogOut,
-  Coffee,
-  MessageSquare,
-  Video,
-  VideoOff,
-} from 'lucide-react';
-import { IRoom, OnlineUser, IChatMessage } from '@repo/shared-types';
-import { playLeaveSound, playHeartSound } from '../services/audio';
-import { Footer } from './Footer';
+import React, { useState } from 'react';
+import { Sparkles } from 'lucide-react';
+import { playLeaveSound } from '../services/audio';
+import { RoomChat } from './RoomChat';
+import { ScreenPainel } from './ScreenPainel';
 import confetti from 'canvas-confetti';
-import { getInitials } from '../utils/helpers';
-import { useDevicesStore, useOnlineUserListStore } from '../states/stores';
+import { IChatMessage, IRoom, OnlineUser } from '@repo/shared-types';
+import { useDevicesStore } from '../states/stores';
 
 export interface RoomViewProps {
   room: IRoom;
   currentUser: OnlineUser;
   onLeaveRoom: () => void;
+  onGiveHeart: (roomId: string, targetUserId: string) => void;
 }
-
-const REACTION_EMOJIS = ['❤️', '👏', '😂', '🎉'];
 
 interface ReactionParticle {
   id: string;
@@ -42,20 +27,21 @@ export const RoomView: React.FC<RoomViewProps> = ({
   room,
   currentUser,
   onLeaveRoom,
+  onGiveHeart,
 }) => {
   const [messages, setMessages] = useState<IChatMessage[]>([
     {
       id: 'welcome-msg',
       roomId: room.id,
       userId: 'system',
-      userName: 'Sistema',
-      text: `Bem-vindo à ${room.title}! Fique à vontade para dizer oi.`,
+      userName: 'System',
+      text: `Welcome to ${room.title}! Feel free to say hi.`,
       timestamp: Date.now(),
       type: 'text',
     },
   ]);
-  const [inputText, setInputText] = useState('');
   const [showChatOnMobile, setShowChatOnMobile] = useState(false);
+  const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [floatingHearts, setFloatingHearts] = useState<{ id: string; x: number; y: number; text: string }[]>([]);
   const [activeReactions, setActiveReactions] = useState<ReactionParticle[]>([]);
@@ -68,17 +54,12 @@ export const RoomView: React.FC<RoomViewProps> = ({
     setCameraOn,
   } = useDevicesStore();
 
-  const [isDeafened, setIsDeafened] = useState(false);
+  // No speaker/deafen state in the devices store, so keep it local
+  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
 
   const isMuted = !microphoneOn;
+  const isDeafened = !isAudioEnabled;
   const isCameraOn = cameraOn;
-
-  const { onlineUsers } = useOnlineUserListStore();
-  const memberUsers = room.members
-    .map((id) => onlineUsers.find((u) => u.id === id) ?? (id === currentUser.id ? currentUser : undefined))
-    .filter((u): u is NonNullable<typeof u> => !!u);
-
-  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const triggerUserReaction = (userId: string, emoji: string) => {
     if (emoji === '🎉') return;
@@ -104,32 +85,20 @@ export const RoomView: React.FC<RoomViewProps> = ({
     }, 1800);
   };
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, showChatOnMobile]);
-
-  const showNotification = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage((prev) => (prev === msg ? null : prev)), 2500);
-  };
-
   const handleToggleMic = () => {
     setMicrophoneOn(!microphoneOn);
-    showNotification(!microphoneOn ? 'Microfone ativado' : 'Microfone silenciado');
   };
 
   const handleToggleCamera = () => {
     setCameraOn(!cameraOn);
-    showNotification(!cameraOn ? 'Câmera ativada' : 'Câmera desligada');
   };
 
   const handleToggleAudio = () => {
-    setIsDeafened((prev) => !prev);
+    setIsAudioEnabled((prev) => !prev);
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputText.trim()) return;
+  const handleSendMessage = (text: string) => {
+    if (!text.trim()) return;
 
     const newMsg: IChatMessage = {
       id: `msg-${Date.now()}`,
@@ -137,13 +106,12 @@ export const RoomView: React.FC<RoomViewProps> = ({
       userId: currentUser.id,
       userName: currentUser.name,
       userAvatar: currentUser.avatar,
-      text: inputText.trim(),
+      text: text.trim(),
       timestamp: Date.now(),
       type: 'text',
     };
 
     setMessages((prev) => [...prev, newMsg]);
-    setInputText('');
   };
 
   const sendReaction = (emoji: string) => {
@@ -155,7 +123,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
       roomId: room.id,
       userId: currentUser.id,
       userName: currentUser.name,
-      text: `${currentUser.name} reagiu com ${emoji}`,
+      text: `${currentUser.name} reacted with ${emoji}`,
       timestamp: Date.now(),
       type: 'reaction',
     };
@@ -180,9 +148,8 @@ export const RoomView: React.FC<RoomViewProps> = ({
     }, 2000);
   };
 
-  const handleGiveHeartInRoom = (member: OnlineUser) => {
-    playHeartSound();
-    triggerFloatingHeart(member.id, `+1 💙 de ${currentUser.name}`);
+  const handleFollow = (_member: OnlineUser) => {
+    // No-op function executed upon clicking follow
   };
 
   const handleLeave = () => {
@@ -197,356 +164,44 @@ export const RoomView: React.FC<RoomViewProps> = ({
     >
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="absolute top-16 right-6 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black border border-amber-400/50 text-amber-400 text-xs font-semibold shadow-xl shadow-black/80 animate-in fade-in slide-in-from-top-2 duration-200 pointer-events-none">
-          <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+        <div className="absolute top-6 right-6 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black border border-amber-500/50 text-amber-500 text-xs font-semibold shadow-xl shadow-black/80 animate-in fade-in slide-in-from-top-2 duration-200 pointer-events-none">
+          <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Top Header Bar */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/20 bg-transparent shrink-0">
-        <div className="min-w-0">
-          <h1 className="text-white font-bold text-base sm:text-lg tracking-tight truncate">
-            {room.title}
-          </h1>
-          {room.subtitle && (
-            <p className="text-xs text-white/70 truncate mt-0.5">
-              {room.subtitle}
-            </p>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 text-xs text-white/80 bg-white/5 border border-white/20 px-3 py-1.5 rounded-full">
-            <Users className="w-3.5 h-3.5 text-amber-400" />
-            <span>{room.members.length}/{room.maxSlots}</span>
-          </span>
-        </div>
-      </div>
-
-      {/* Main Body: Stage Area + Chat Panel */}
+      {/* Main Body: Stage Area (Members Container with Controls) + Chat Panel */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Audio Lounge Stage */}
-        <div
-          className={`flex-1 flex flex-col justify-between p-4 sm:p-6 overflow-y-auto ${
-            showChatOnMobile ? 'hidden sm:flex' : 'flex'
-          }`}
-        >
-          {/* Stage Grid of Participants */}
-          <div className="flex-1 flex items-center justify-center">
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 max-w-2xl w-full justify-items-center my-auto">
-              {memberUsers.map((member) => {
-                const isCurrent = member.id === currentUser.id;
-                const isUserMuted = isCurrent ? isMuted : member.microphoneOn === false;
-                const isUserCam = isCurrent ? isCameraOn : false;
+        {/* Audio Lounge Stage Screen Painel (Includes Controls Bar) */}
+        <ScreenPainel
+          room={room}
+          currentUser={currentUser}
+          activeMemberId={activeMemberId}
+          onSelectMember={(member) => setActiveMemberId(member ? member.id : null)}
+          isMuted={isMuted}
+          onToggleMic={handleToggleMic}
+          isCameraOn={isCameraOn}
+          onToggleCamera={handleToggleCamera}
+          isDeafened={isDeafened}
+          onToggleAudio={handleToggleAudio}
+          activeReactions={activeReactions}
+          floatingHearts={floatingHearts}
+          onFollow={handleFollow}
+          onGiveHeart={handleFollow}
+          onSendReaction={sendReaction}
+          onLeave={handleLeave}
+          showChatOnMobile={showChatOnMobile}
+          onToggleChatOnMobile={() => setShowChatOnMobile(!showChatOnMobile)}
+        />
 
-                return (
-                  <div
-                    key={member.id}
-                    id={`stage-member-${member.id}`}
-                    className="flex flex-col items-center group relative"
-                  >
-                    {/* Avatar Circle on Stage */}
-                    <div className="relative">
-                      {/* Active Multiple Reaction Particles Burst beside Avatar */}
-                      {activeReactions
-                        .filter((r) => r.userId === member.id)
-                        .map((r) => (
-                          <div
-                            key={r.id}
-                            style={{
-                              ['--tx' as any]: `${r.tx}px`,
-                              animationDelay: `${r.delayMs}ms`,
-                              fontSize: `${r.sizeRem}rem`,
-                            }}
-                            className="reaction-particle absolute -top-4 -right-1 z-30 pointer-events-none flex items-center justify-center select-none"
-                          >
-                            <span>{r.emoji}</span>
-                          </div>
-                        ))}
-
-                      {member.avatar ? (
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden transition-all duration-300 shadow-xl">
-                          <img
-                            src={member.avatar}
-                            alt={member.name}
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex flex-col items-center justify-center transition-all duration-300 shadow-xl bg-white/10 border border-white/20">
-                          <span className="text-white font-bold text-xl sm:text-2xl leading-none">
-                            {getInitials(member.name)}
-                          </span>
-                          {member.unverified && (
-                            <span className="text-[9px] text-white font-bold tracking-tighter uppercase mt-1">
-                              BANCO
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Camera badge for user */}
-                      {isUserCam && (
-                        <div className="absolute top-0 left-0 w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center shadow">
-                          <Video className="w-3.5 h-3.5 text-black" />
-                        </div>
-                      )}
-
-                      {/* Mute badge */}
-                      {isUserMuted && (
-                        <div className="absolute bottom-0 right-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center shadow">
-                          <MicOff className="w-3.5 h-3.5 text-white" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Name & Tag */}
-                    <div className="mt-2.5 text-center">
-                      <p className="text-white font-medium text-sm flex items-center justify-center gap-1">
-                        <span>{member.name}</span>
-                        {isCurrent && <span className="text-[10px] text-amber-400 font-normal">(Você)</span>}
-                      </p>
-                    </div>
-
-                    {/* Heart Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleGiveHeartInRoom(member)}
-                      className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-amber-400 hover:text-rose-400 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                      title={`Mandar carinho para ${member.name}`}
-                    >
-                      <Heart className="w-3.5 h-3.5 fill-amber-400 text-amber-400 hover:fill-rose-400 hover:text-rose-400 transition-colors" />
-                      <span>{member.hearts || 0}</span>
-                    </button>
-                  </div>
-                );
-              })}
-
-              {/* Empty Seats */}
-              {Array.from({ length: Math.max(0, room.maxSlots - room.members.length) }).map((_, idx) => (
-                <div key={`stage-empty-${idx}`} className="flex flex-col items-center justify-center">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-dashed border-white/30 flex flex-col items-center justify-center text-white/60 bg-white/5">
-                    <Users className="w-6 h-6 opacity-60 mb-1" />
-                    <span className="text-[10px] font-medium text-white/70">Vaga livre</span>
-                  </div>
-                  <div className="h-10" />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Stage Floating Heart Labels */}
-          {floatingHearts.map((h) => (
-            <div
-              key={h.id}
-              style={{ left: `${h.x}%`, top: `${h.y}%` }}
-              className="absolute pointer-events-none z-30 transform -translate-x-1/2 -translate-y-1/2 animate-out fade-out slide-out-to-top duration-1000 text-xs font-bold text-rose-300 bg-rose-950/90 border border-rose-500/50 px-3 py-1 rounded-full shadow-lg"
-            >
-              {h.text}
-            </div>
-          ))}
-
-          {/* Quick Reactions Bar */}
-          <div className="mt-4 pt-3 border-t border-white/20 flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-white/70 mr-1 hidden sm:inline">Reações:</span>
-              {REACTION_EMOJIS.map((emoji) => (
-                <button
-                  key={emoji}
-                  onClick={() => sendReaction(emoji)}
-                  className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-base hover:scale-115 active:scale-95 transition-transform cursor-pointer shadow"
-                  title={`Enviar ${emoji}`}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Bottom Audio & Video Controls Bar */}
-          <div className="mt-4 pt-3 border-t border-white/20 flex items-center justify-between gap-3 bg-transparent p-2 sm:p-3 rounded-2xl">
-            <div className="flex items-center gap-3">
-              {/* Mic Button: Yellow when enabled (not muted), Darker when disabled (muted) */}
-              <button
-                id="stage-toggle-mic-btn"
-                onClick={handleToggleMic}
-                title={!isMuted ? 'Desativar Microfone' : 'Ativar Microfone'}
-                aria-label={!isMuted ? 'Desativar Microfone' : 'Ativar Microfone'}
-                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 ${
-                  !isMuted
-                    ? 'bg-amber-400'
-                    : 'bg-black hover:bg-white/10 border border-white/20 text-white/70'
-                }`}
-              >
-                {!isMuted ? <Mic className="w-5 h-5 text-black" /> : <MicOff className="w-5 h-5 text-white/70" />}
-              </button>
-
-              {/* Camera Button: Yellow when enabled (camera on), Darker when disabled (camera off) */}
-              <button
-                id="stage-toggle-camera-btn"
-                onClick={handleToggleCamera}
-                title={isCameraOn ? 'Desativar Câmera' : 'Ativar Câmera'}
-                aria-label={isCameraOn ? 'Desativar Câmera' : 'Ativar Câmera'}
-                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 ${
-                  isCameraOn
-                    ? 'bg-amber-400'
-                    : 'bg-black hover:bg-white/10 border border-white/20 text-white/70'
-                }`}
-              >
-                {isCameraOn ? <Video className="w-5 h-5 text-black" /> : <VideoOff className="w-5 h-5 text-white/70" />}
-              </button>
-
-              {/* Speaker / Audio Button: Yellow when enabled (audio active), Darker when disabled (audio muted) */}
-              <button
-                id="stage-toggle-deafen-btn"
-                onClick={handleToggleAudio}
-                title={!isDeafened ? 'Silenciar Áudio' : 'Ativar Áudio'}
-                aria-label={!isDeafened ? 'Silenciar Áudio' : 'Ativar Áudio'}
-                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 ${
-                  !isDeafened
-                    ? 'bg-amber-400'
-                    : 'bg-black hover:bg-white/10 border border-white/20 text-white/70'
-                }`}
-              >
-                {!isDeafened ? <Volume2 className="w-5 h-5 text-black" /> : <VolumeX className="w-5 h-5 text-white/70" />}
-              </button>
-
-              {/* Mobile Chat Toggle Button: Yellow when open, Darker when closed */}
-              <button
-                id="stage-mobile-chat-toggle-btn"
-                onClick={() => setShowChatOnMobile(!showChatOnMobile)}
-                title={showChatOnMobile ? 'Ver Palco' : 'Ver Chat'}
-                aria-label={showChatOnMobile ? 'Ver Palco' : 'Ver Chat'}
-                className={`sm:hidden w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 ${
-                  showChatOnMobile
-                    ? 'bg-amber-400'
-                    : 'bg-black hover:bg-white/10 border border-white/20 text-white/70'
-                }`}
-              >
-                <MessageSquare className={`w-5 h-5 ${showChatOnMobile ? 'text-black' : 'text-white/70'}`} />
-              </button>
-            </div>
-
-            {/* Leave Room Button: Only Red button, circular, no border, white icon */}
-            <button
-              id="stage-leave-bottom-btn"
-              onClick={handleLeave}
-              title="Sair da sala"
-              aria-label="Sair da sala"
-              className="w-11 h-11 rounded-full flex items-center justify-center bg-rose-600 hover:bg-rose-500 transition-all cursor-pointer shadow-lg active:scale-95"
-            >
-              <LogOut className="w-5 h-5 text-white" />
-            </button>
-          </div>
-        </div>
-
-        {/* Right Live Chat Panel */}
-        <div
-          className={`w-full sm:w-80 sm:max-w-xs border-l border-white/20 bg-black/80 flex flex-col ${
-            showChatOnMobile ? 'flex flex-1' : 'hidden sm:flex'
-          }`}
-        >
-          <div className="p-3.5 border-b border-white/20 flex items-center justify-between bg-white/5">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-amber-400" />
-              <span className="text-xs font-bold text-white">Chat da Sala</span>
-            </div>
-            <span className="text-[11px] text-white/60">
-              {messages.length} mensagens
-            </span>
-          </div>
-
-          {/* Chat Messages List */}
-          <div className="flex-1 p-3.5 overflow-y-auto space-y-2.5">
-            {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-4 text-white/50 text-xs">
-                <Coffee className="w-8 h-8 opacity-40 mb-2" />
-                <p>Nenhuma mensagem ainda.</p>
-                <p className="text-[11px] mt-1 text-white/40">Diga oi para todo mundo na sala!</p>
-              </div>
-            ) : (
-              messages.map((msg) => {
-                if (msg.type === 'system') {
-                  return (
-                    <div
-                      key={msg.id}
-                      className="text-center py-1 px-2 rounded-lg bg-white/5 text-[10px] text-white/60 italic"
-                    >
-                      {msg.text}
-                    </div>
-                  );
-                }
-
-                if (msg.type === 'reaction') {
-                  return (
-                    <div
-                      key={msg.id}
-                      className="text-center py-0.5 text-[11px] text-white/60"
-                    >
-                      {msg.text}
-                    </div>
-                  );
-                }
-
-                const isMe = msg.userId === currentUser.id;
-
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
-                  >
-                    <span className="text-[10px] text-white/60 mb-0.5 px-1">
-                      {isMe ? 'Você' : msg.userName}
-                    </span>
-                    <div
-                      className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
-                        isMe
-                          ? 'bg-amber-400 text-black font-medium rounded-br-none'
-                          : 'bg-white/10 text-white border border-white/20 rounded-bl-none'
-                      }`}
-                    >
-                      {msg.text}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-            <div ref={chatEndRef} />
-          </div>
-
-          {/* Chat Input */}
-          <form onSubmit={handleSendMessage} className="p-3 border-t border-white/20 bg-transparent">
-            <div className="flex items-center gap-2">
-              <input
-                id="stage-chat-message-input"
-                type="text"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                placeholder="Digite uma mensagem..."
-                className="flex-1 bg-white/5 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400 transition-colors"
-              />
-              <button
-                id="stage-chat-send-btn"
-                type="submit"
-                disabled={!inputText.trim()}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shrink-0 shadow ${
-                  inputText.trim()
-                    ? 'bg-amber-400 text-black cursor-pointer'
-                    : 'bg-black border border-white/20 text-white/40 opacity-60 cursor-not-allowed'
-                }`}
-                title="Enviar mensagem"
-              >
-                <Send className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </form>
-        </div>
+        {/* Right Live Chat Panel Component */}
+        <RoomChat
+          messages={messages}
+          currentUserId={currentUser.id}
+          onSendMessage={handleSendMessage}
+          showChatOnMobile={showChatOnMobile}
+        />
       </div>
-
-      {/* Global Footer */}
-      <Footer />
     </div>
   );
 };
