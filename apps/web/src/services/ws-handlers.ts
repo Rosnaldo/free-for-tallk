@@ -1,5 +1,5 @@
-import type { WsServerMessage } from '@repo/shared-types';
-import type { CurrentUserStoreInstance, OnlineUserListStoreInstance, ReactionsStoreInstance, RoomListStoreInstance } from '../states/stores.ts';
+import type { IChatMessage, WsServerMessage } from '@repo/shared-types';
+import type { ChatStoreInstance, CurrentUserStoreInstance, OnlineUserListStoreInstance, ReactionsStoreInstance, RoomListStoreInstance } from '../states/stores.ts';
 import { mytoast } from '../components/toast.tsx';
 
 export interface WsHandlerStores {
@@ -7,6 +7,7 @@ export interface WsHandlerStores {
   onlineUserListStore: OnlineUserListStoreInstance;
   roomListStore: RoomListStoreInstance;
   reactionsStore: ReactionsStoreInstance;
+  chatStore: ChatStoreInstance;
 }
 
 export function handleWsMessage(message: WsServerMessage, stores: WsHandlerStores): void {
@@ -35,12 +36,25 @@ export function handleWsMessage(message: WsServerMessage, stores: WsHandlerStore
       stores.roomListStore.getState().applyDelta(message.delta);
       break;
     case 'room:reaction': {
-      // The sender already triggers their own animation instantly on click
-      // (see RoomView.sendReaction) -- this only needs to animate it for
-      // everyone else in the room.
+      // The sender already triggers their own animation and adds their own
+      // chat entry instantly on click (see RoomView.sendReaction) -- this
+      // only needs to do the same for everyone else in the room.
       const currentUserId = stores.currentUserStore.getState().currentUser?.id;
       if (message.userId !== currentUserId) {
         stores.reactionsStore.getState().triggerReaction(message.userId, message.emoji);
+
+        const reactingUser = stores.onlineUserListStore.getState().onlineUsers.find((u) => u.id === message.userId);
+        const userName = reactingUser?.name ?? 'Alguém';
+        const reactionMsg: IChatMessage = {
+          id: `react-${message.userId}-${Date.now()}`,
+          roomId: message.roomId,
+          userId: message.userId,
+          userName,
+          text: `${userName} reacted with ${message.emoji}`,
+          timestamp: Date.now(),
+          type: 'reaction',
+        };
+        stores.chatStore.getState().addMessage(reactionMsg);
       }
       break;
     }

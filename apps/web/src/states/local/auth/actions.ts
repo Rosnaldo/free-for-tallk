@@ -3,7 +3,7 @@ import { fetchUser } from '../../../services/api/user';
 import { RealtimeWsService } from '../../../services/ws/realtime-ws';
 import { handleWsMessage } from '../../../services/ws-handlers';
 import { initWs } from '../../../services/ws/init-ws';
-import { useCurrentUserStore, useOnlineUserListStore, useReactionsStore, useRoomListStore, useTabLeaderStore } from '../../stores';
+import { useCurrentUserStore, useOnlineUserListStore, useReactionsStore, useChatStore, useRoomListStore, useTabLeaderStore } from '../../stores';
 import { AuthState } from './state';
 import authSession from '../../../auth/session';
 import { mapUserToOnlineUser } from '@repo/shared-types';
@@ -61,6 +61,7 @@ export const createAuthActions = (
                         onlineUserListStore: useOnlineUserListStore,
                         roomListStore: useRoomListStore,
                         reactionsStore: useReactionsStore,
+                        chatStore: useChatStore,
                     }),
                 );
 

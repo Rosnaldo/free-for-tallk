@@ -6,7 +6,6 @@ export interface RoomChatProps {
   messages: IChatMessage[];
   currentUserId: string;
   onSendMessage: (text: string) => void;
-  showChatOnMobile?: boolean;
   className?: string;
 }
 
@@ -14,7 +13,6 @@ export const RoomChat: React.FC<RoomChatProps> = ({
   messages,
   currentUserId,
   onSendMessage,
-  showChatOnMobile = false,
   className = '',
 }) => {
   const [inputText, setInputText] = useState('');
@@ -22,7 +20,7 @@ export const RoomChat: React.FC<RoomChatProps> = ({
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, showChatOnMobile]);
+  }, [messages]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -35,9 +33,7 @@ export const RoomChat: React.FC<RoomChatProps> = ({
   return (
     <div
       id="room-chat-panel"
-      className={`w-full sm:w-80 sm:max-w-xs border-l border-white/20 bg-black/80 flex flex-col ${
-        showChatOnMobile ? 'flex flex-1' : 'hidden sm:flex'
-      } ${className}`}
+      className={`w-full sm:w-80 sm:max-w-xs border-l border-white/20 bg-black/80 flex flex-col flex flex-1 ${className}`}
     >
       {/* Header */}
       <div className="p-3.5 border-b border-white/20 flex items-center justify-between bg-white/5">

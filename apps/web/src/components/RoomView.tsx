@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { playLeaveSound } from '../services/audio';
 import { RoomChat } from './RoomChat';
 import { ScreenPainel } from './ScreenPainel';
 import confetti from 'canvas-confetti';
 import { IChatMessage, IRoom, OnlineUser, RoomReactionEmoji } from '@repo/shared-types';
-import { useDevicesStore, useReactionsStore } from '../states/stores';
+import { useChatStore, useDevicesStore, useReactionsStore } from '../states/stores';
 import { initWs } from '../services/ws/init-ws';
 
 export interface RoomViewProps {
@@ -21,18 +21,30 @@ export const RoomView: React.FC<RoomViewProps> = ({
   onLeaveRoom,
   onGiveHeart,
 }) => {
-  const [messages, setMessages] = useState<IChatMessage[]>([
-    {
-      id: 'welcome-msg',
-      roomId: room.id,
-      userId: 'system',
-      userName: 'System',
-      text: `Welcome to ${room.title}! Feel free to say hi.`,
-      timestamp: Date.now(),
-      type: 'text',
-    },
-  ]);
-  const [showChatOnMobile, setShowChatOnMobile] = useState(false);
+  // Chat lives in its own store (rather than local state) so a reaction
+  // received over ws (see ws-handlers.ts) can add a chat entry from outside
+  // this component, same as it does for the sender locally below.
+  const { messages: allMessages, addMessage } = useChatStore();
+  const messages = allMessages.filter((m) => m.roomId === room.id);
+
+  useEffect(() => {
+    const welcomeId = `welcome-msg-${room.id}`;
+    if (!allMessages.some((m) => m.id === welcomeId)) {
+      addMessage({
+        id: welcomeId,
+        roomId: room.id,
+        userId: 'system',
+        userName: 'System',
+        text: `Welcome to ${room.title}! Feel free to say hi.`,
+        timestamp: Date.now(),
+        type: 'text',
+      });
+    }
+    // Seeds the welcome message once per room -- deliberately not reacting
+    // to allMessages/addMessage so this doesn't re-fire on every message.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room.id]);
+
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [floatingHearts, setFloatingHearts] = useState<{ id: string; x: number; y: number; text: string }[]>([]);
@@ -86,7 +98,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
       type: 'text',
     };
 
-    setMessages((prev) => [...prev, newMsg]);
+    addMessage(newMsg);
   };
 
   const sendReaction = (emoji: string) => {
@@ -106,7 +118,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
       type: 'reaction',
     };
 
-    setMessages((prev) => [...prev, reactionMsg]);
+    addMessage(reactionMsg);
 
     // Burst confetti only if it is the confetti / celebration reaction (🎉)
     if (emoji === '🎉') {
@@ -116,14 +128,6 @@ export const RoomView: React.FC<RoomViewProps> = ({
         origin: { x: 0.5, y: 0.6 },
       });
     }
-  };
-
-  const triggerFloatingHeart = (_targetUserId: string, label: string) => {
-    const id = `heart-${Date.now()}-${Math.random()}`;
-    setFloatingHearts((prev) => [...prev, { id, x: Math.random() * 60 + 20, y: 50, text: label }]);
-    setTimeout(() => {
-      setFloatingHearts((prev) => prev.filter((h) => h.id !== id));
-    }, 2000);
   };
 
   const handleFollow = (_member: OnlineUser) => {
@@ -168,8 +172,6 @@ export const RoomView: React.FC<RoomViewProps> = ({
           onGiveHeart={handleFollow}
           onSendReaction={sendReaction}
           onLeave={handleLeave}
-          showChatOnMobile={showChatOnMobile}
-          onToggleChatOnMobile={() => setShowChatOnMobile(!showChatOnMobile)}
         />
 
         {/* Right Live Chat Panel Component */}
@@ -177,7 +179,6 @@ export const RoomView: React.FC<RoomViewProps> = ({
           messages={messages}
           currentUserId={currentUser.id}
           onSendMessage={handleSendMessage}
-          showChatOnMobile={showChatOnMobile}
         />
       </div>
     </div>

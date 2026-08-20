@@ -5,7 +5,6 @@ import {
   Volume2,
   VolumeX,
   LogOut,
-  MessageSquare,
   Video,
   VideoOff,
 } from 'lucide-react';
@@ -18,8 +17,6 @@ export interface RoomControlsBarProps {
   onToggleCamera: () => void;
   isDeafened?: boolean;
   onToggleAudio: () => void;
-  showChatOnMobile?: boolean;
-  onToggleChatOnMobile?: () => void;
   onSendReaction: (emoji: string) => void;
   onLeave: () => void;
   reactionEmojis?: string[];
@@ -35,8 +32,6 @@ export const RoomControlsBar: React.FC<RoomControlsBarProps> = ({
   onToggleCamera,
   isDeafened = false,
   onToggleAudio,
-  showChatOnMobile = false,
-  onToggleChatOnMobile,
   onSendReaction,
   onLeave,
   reactionEmojis = DEFAULT_REACTION_EMOJIS,
@@ -93,23 +88,6 @@ export const RoomControlsBar: React.FC<RoomControlsBarProps> = ({
         >
           {!isDeafened ? <Volume2 className="w-5 h-5 text-black" /> : <VolumeX className="w-5 h-5 text-white/70" />}
         </button>
-
-        {/* Mobile Chat Toggle Button */}
-        {onToggleChatOnMobile && (
-          <button
-            id="stage-mobile-chat-toggle-btn"
-            onClick={onToggleChatOnMobile}
-            title={showChatOnMobile ? 'Ver Palco' : 'Ver Chat'}
-            aria-label={showChatOnMobile ? 'Ver Palco' : 'Ver Chat'}
-            className={`sm:hidden w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 ${
-              showChatOnMobile
-                ? 'bg-amber-500 hover:bg-amber-500/90'
-                : 'bg-black hover:bg-white/10 border border-white/20 text-white/70'
-            }`}
-          >
-            <MessageSquare className={`w-5 h-5 ${showChatOnMobile ? 'text-black' : 'text-white/70'}`} />
-          </button>
-        )}
       </div>
 
       {/* Reactions Group */}
