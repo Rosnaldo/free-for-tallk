@@ -272,15 +272,15 @@ services:
 
 volumes:
   keycloak_postgres:
-    name: call_center_prod_keycloak_postgres
+    name: free_for_talk_prod_keycloak_postgres
   free_for_talk_mongo:
     name: free_for_talk_prod_mongo
   free_for_talk_redis:
     name: free_for_talk_prod_redis
   loki_data:
-    name: call_center_prod_loki_data
+    name: free_for_talk_prod_loki_data
   grafana_data:
-    name: call_center_prod_grafana_data
+    name: free_for_talk_prod_grafana_data
 
 networks:
   frontend:
