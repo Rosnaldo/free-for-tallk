@@ -6,6 +6,7 @@ import { GetUser } from '../middleware/get_user';
 import { requireRole } from '../middleware/require_role';
 import uploadImage from '../middleware/upload_image';
 import { getUserModel, toUser } from '../models/user';
+import { publishOnlineUserPatch } from '../redis/online_users';
 import { generateUniqueSlug } from '../utils/unique_slug';
 import { joinUrl } from '../utils/join_url';
 import { compressToTargetSize } from '../utils/image_compress';
@@ -202,7 +203,10 @@ router.post('/users/upload-avatar', GetKeycloakUser, GetUser, uploadImage.single
     };
     await doc.save();
 
-    res.status(200).json(toUser(doc));
+    const user = toUser(doc);
+    await publishOnlineUserPatch(user._id, { avatar: user.avatar?.url });
+
+    res.status(200).json(user);
   } catch (err) {
     handleError(err, res);
   }

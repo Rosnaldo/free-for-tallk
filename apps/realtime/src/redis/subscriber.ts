@@ -2,8 +2,9 @@ import type Redis from 'ioredis';
 import { REDIS_CHANNELS, SOCKET_OPEN, OnlineUserListEvent, RoomListEvent, RoomReactionEvent, RoomDeviceStateEvent, RoomChatEvent, RoomNoticeEvent, WsServerMessage } from '@repo/shared-types';
 import logger from '#logger';
 import { getRedisClient } from './singleton';
-import { addOnlineUser as addOnlineUserPresence, removeOnlineUser as removeOnlineUserPresence } from '../services/online_list_redis';
+import { addOnlineUser as addOnlineUserPresence, removeOnlineUser as removeOnlineUserPresence, patchOnlineUserIfPresent as patchOnlineUserPresence } from '../services/online_list_redis';
 import * as onlineRegistry from '../websocket/user_registry';
+import { broadcastOnlineUserDelta } from '../websocket/broadcast_online_user_delta';
 import { broadcastRoomDelta } from '../websocket/broadcast_room_delta';
 import { broadcastRoomReaction } from '../websocket/broadcast_room_reaction';
 import { broadcastRoomDeviceState } from '../websocket/broadcast_room_device_state';
@@ -26,6 +27,10 @@ function handleOnlineUserEvent(raw: string): void {
         applied = addOnlineUserPresence(event.onlineUser).then(() => undefined);
     } else if (event.type === 'remove') {
         applied = removeOnlineUserPresence(event.onlineUserId).then(() => undefined);
+    } else if (event.type === 'patch') {
+        applied = patchOnlineUserPresence(event.onlineUserId, event.patch).then(() => {
+            broadcastOnlineUserDelta(event);
+        });
     } else {
         throw Error('handleOnlineUserEvent invalid OnlineUserListEvent');
     }

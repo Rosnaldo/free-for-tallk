@@ -182,6 +182,7 @@ export interface Pagination {
 
 export type OnlineUserListEvent =
   | { type: "upsert"; onlineUser: OnlineUser }
+  | { type: "patch"; onlineUserId: string; patch: Partial<OnlineUser> }
   | { type: "remove"; onlineUserId: string };
 
 export type RoomListEvent =
