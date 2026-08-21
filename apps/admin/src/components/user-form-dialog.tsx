@@ -46,7 +46,7 @@ export function UserFormDialog({
     const [lastName, setLastName] = useState("")
     const [email, setEmail] = useState("")
     const [avatarUrl, setAvatarUrl] = useState("")
-    const [role, setRole] = useState<keyof typeof UserRole>("customer")
+    const [role, setRole] = useState<keyof typeof UserRole>("member")
     const [errors, setErrors] = useState<Record<string, string>>({})
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -93,7 +93,7 @@ export function UserFormDialog({
                 setFirstName("")
                 setLastName("")
                 setEmail("")
-                setRole("customer")
+                setRole("member")
                 setAvatarUrl('')
             }
             setErrors({})

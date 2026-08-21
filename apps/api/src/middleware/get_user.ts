@@ -22,7 +22,7 @@ export async function GetUser(req: Request, res: Response, next: NextFunction): 
         lastName: lastName ?? '',
         slug: await generateUniqueSlug(`${firstName ?? ''}-${lastName ?? ''}`),
         email,
-        role: UserRole.customer,
+        role: UserRole.member,
       });
     }
 

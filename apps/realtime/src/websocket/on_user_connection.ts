@@ -28,7 +28,7 @@ export function onConnection(ws: ISocket & { isAlive: boolean }, userId: string,
   if (presenceId) cancelGracePeriod(presenceId).catch((err) => logger.error(err, 'failed to cancel grace period'));
 
   if (presenceId && user) {
-    const onlineUser = mapUserToOnlineUser(user, { id: presenceId, status: 'online' });
+    const onlineUser = mapUserToOnlineUser(user, { id: presenceId });
     addOnlineUser(onlineUser).catch((err) => logger.error(err, 'failed to add user to redis list'));
   }
 
