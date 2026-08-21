@@ -105,7 +105,7 @@ export const RoomMember: React.FC<RoomMemberProps> = ({
         >
           {member.avatar ? (
             <div
-              className={`${avatarSizeClasses} rounded-full overflow-hidden transition-all duration-300 shadow-xl border-2 border-transparent group-hover:border-amber-400/50`}
+              className={`${avatarSizeClasses} rounded-full overflow-hidden transition-all duration-300 shadow-xl border-2 border-transparent`}
             >
               <img
                 src={member.avatar}
@@ -116,7 +116,7 @@ export const RoomMember: React.FC<RoomMemberProps> = ({
             </div>
           ) : (
             <div
-              className={`${avatarSizeClasses} rounded-full flex flex-col items-center justify-center transition-all duration-300 shadow-xl bg-white/10 border border-white/20 group-hover:border-amber-400/50`}
+              className={`${avatarSizeClasses} rounded-full flex flex-col items-center justify-center transition-all duration-300 shadow-xl bg-white/10 border border-white/20`}
             >
               <span className={`text-white font-bold leading-none ${initialsTextClasses}`}>
                 {getInitials(member.name)}
