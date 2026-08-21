@@ -6,6 +6,7 @@ import confetti from 'canvas-confetti';
 import { IChatMessage, IRoom, OnlineUser, RoomReactionEmoji } from '@repo/shared-types';
 import { useChatStore, useDevicesStore, useReactionsStore } from '../states/stores';
 import { initWs } from '../services/ws/init-ws';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export interface RoomViewProps {
   room: IRoom;
@@ -25,6 +26,11 @@ export const RoomView: React.FC<RoomViewProps> = ({
   const messages = allMessages.filter((m) => m.roomId === room.id);
 
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
+
+  // Chat is a persistent sidebar on desktop but a modal opened via
+  // RoomControlsBar's chat button on mobile (see ScreenPainel/RoomControlsBar).
+  const isMobile = useIsMobile();
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // Reaction animation state lives in its own store so it can be driven both
   // by local clicks and by ws events from other room members (see below).
@@ -143,14 +149,39 @@ export const RoomView: React.FC<RoomViewProps> = ({
           onGiveHeart={handleFollow}
           onSendReaction={sendReaction}
           onLeave={handleLeave}
+          onOpenChat={() => setIsChatOpen(true)}
         />
 
-        {/* Right Live Chat Panel Component */}
-        <RoomChat
-          messages={messages}
-          currentUserId={currentUser.id}
-          onSendMessage={handleSendMessage}
-        />
+        {/* Right Live Chat Panel on desktop; a bottom-sheet modal on mobile,
+            opened via RoomControlsBar's chat button -- only one is ever
+            mounted at a time (RoomChat's DOM ids aren't unique per instance). */}
+        {isMobile ? (
+          isChatOpen && (
+            <div
+              className="fixed inset-0 z-50 bg-black/70 flex items-end"
+              onClick={() => setIsChatOpen(false)}
+            >
+              <div
+                className="w-full max-h-[85vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <RoomChat
+                  messages={messages}
+                  currentUserId={currentUser.id}
+                  onSendMessage={handleSendMessage}
+                  onClose={() => setIsChatOpen(false)}
+                  className="rounded-t-2xl border-t-0 border-l-0 max-h-[85vh]"
+                />
+              </div>
+            </div>
+          )
+        ) : (
+          <RoomChat
+            messages={messages}
+            currentUserId={currentUser.id}
+            onSendMessage={handleSendMessage}
+          />
+        )}
       </div>
     </div>
   );

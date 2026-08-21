@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
-import { MessageSquare, Coffee, Send } from 'lucide-react';
+import { MessageSquare, Coffee, Send, X } from 'lucide-react';
 import { IChatMessage } from '@repo/shared-types';
 
 export interface RoomChatProps {
   messages: IChatMessage[];
   currentUserId: string;
   onSendMessage: (text: string) => void;
+  // Rendered as a close (X) button in the header -- passed only when this is
+  // shown as the mobile chat modal (see RoomView), never for the persistent
+  // desktop sidebar.
+  onClose?: () => void;
   className?: string;
 }
 
@@ -13,6 +17,7 @@ export const RoomChat: React.FC<RoomChatProps> = ({
   messages,
   currentUserId,
   onSendMessage,
+  onClose,
   className = '',
 }) => {
   const [inputText, setInputText] = useState('');
@@ -41,9 +46,22 @@ export const RoomChat: React.FC<RoomChatProps> = ({
           <MessageSquare className="w-4 h-4 text-amber-500" />
           <span className="text-xs font-bold text-white">Chat da Sala</span>
         </div>
-        <span className="text-[11px] text-white/60">
-          {messages.length} mensagens
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-white/60">
+            {messages.length} mensagens
+          </span>
+          {onClose && (
+            <button
+              id="stage-chat-close-btn"
+              onClick={onClose}
+              title="Fechar chat"
+              aria-label="Fechar chat"
+              className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-colors cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Chat Messages List */}

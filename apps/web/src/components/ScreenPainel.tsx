@@ -30,6 +30,7 @@ export interface ScreenPainelProps {
   onGiveHeart?: (member: OnlineUser) => void;
   onSendReaction?: (emoji: string) => void;
   onLeave?: () => void;
+  onOpenChat?: () => void;
   className?: string;
 }
 
@@ -50,6 +51,7 @@ export const ScreenPainel: React.FC<ScreenPainelProps> = ({
   onGiveHeart,
   onSendReaction,
   onLeave,
+  onOpenChat,
   className = '',
 }) => {
   const { onlineUsers } = useOnlineUserListStore();
@@ -59,7 +61,7 @@ export const ScreenPainel: React.FC<ScreenPainelProps> = ({
   return (
     <div
       id="screen-painel"
-      className={`flex-1 flex flex-col justify-between overflow-hidden relative flex ${className}`}
+      className={`flex-1 min-h-0 flex flex-col justify-between overflow-hidden relative flex ${className}`}
     >
       {/* Main Content: Stage Grid of Participants OR Selected Member's Media Stage */}
       {activeMember ? (
@@ -132,6 +134,7 @@ export const ScreenPainel: React.FC<ScreenPainelProps> = ({
           onToggleAudio={onToggleAudio}
           onSendReaction={onSendReaction}
           onLeave={onLeave}
+          onOpenChat={onOpenChat}
         />
       )}
     </div>

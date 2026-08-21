@@ -65,7 +65,7 @@ export const RoomPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-amber-400 selection:text-black relative">
+    <div className="h-screen bg-black text-white flex flex-col font-sans selection:bg-amber-400 selection:text-black relative">
       <RoomView
         room={activeRoom}
         currentUser={currentUser!}
