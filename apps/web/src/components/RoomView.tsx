@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
 import { playLeaveSound } from '../services/audio';
 import { RoomChat } from './RoomChat';
 import { ScreenPainel } from './ScreenPainel';
@@ -25,27 +24,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
   const { messages: allMessages, addMessage } = useChatStore();
   const messages = allMessages.filter((m) => m.roomId === room.id);
 
-  useEffect(() => {
-    const welcomeId = `welcome-msg-${room.id}`;
-    if (!allMessages.some((m) => m.id === welcomeId)) {
-      addMessage({
-        id: welcomeId,
-        roomId: room.id,
-        userId: 'system',
-        userName: 'System',
-        text: `Welcome to ${room.title}! Feel free to say hi.`,
-        timestamp: Date.now(),
-        type: 'text',
-      });
-    }
-    // Seeds the welcome message once per room -- deliberately not reacting
-    // to allMessages/addMessage so this doesn't re-fire on every message.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [room.id]);
-
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [floatingHearts, setFloatingHearts] = useState<{ id: string; x: number; y: number; text: string }[]>([]);
 
   // Reaction animation state lives in its own store so it can be driven both
   // by local clicks and by ws events from other room members (see below).
@@ -145,14 +124,6 @@ export const RoomView: React.FC<RoomViewProps> = ({
       id="room-view-container"
       className="w-full h-screen bg-black text-white flex flex-col overflow-hidden relative"
     >
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="absolute top-6 right-6 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black border border-amber-500/50 text-amber-500 text-xs font-semibold shadow-xl shadow-black/80 animate-in fade-in slide-in-from-top-2 duration-200 pointer-events-none">
-          <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
       {/* Main Body: Stage Area (Members Container with Controls) + Chat Panel */}
       <div className="flex-1 flex overflow-hidden">
         {/* Audio Lounge Stage Screen Painel (Includes Controls Bar) */}
@@ -168,7 +139,6 @@ export const RoomView: React.FC<RoomViewProps> = ({
           isDeafened={isDeafened}
           onToggleAudio={handleToggleAudio}
           activeReactions={activeReactions}
-          floatingHearts={floatingHearts}
           onFollow={handleFollow}
           onGiveHeart={handleFollow}
           onSendReaction={sendReaction}

@@ -8,13 +8,15 @@ export function useDailyCoLifecycle() {
     const dailyService = DailyService.getInstance();
     dailyService.onCallObjectChanged(setCallObject);
 
-    const handleBeforeUnload = () => {
+    // pagehide is the reliable signal for a tab close: unlike beforeunload it
+    // also fires on mobile Safari and doesn't opt the page out of bfcache.
+    const handlePageHide = () => {
       dailyService.destroy();
     };
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handlePageHide);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide);
       dailyService.rebuild();
     };
   }, []);

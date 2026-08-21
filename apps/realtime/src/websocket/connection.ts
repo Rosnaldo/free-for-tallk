@@ -7,7 +7,7 @@ import { handlePong } from '#websocket/handler/on_pong';
 import { handleMessageLogout } from '#websocket/handler/message/logout';
 import { handleRoomCreate, handleRoomDelete, handleRoomJoin, handleRoomLeave, handleRoomReaction, handleRoomDeviceState, handleRoomChat } from '#websocket/handler/message/room';
 import { clientRegistry } from '#websocket/client_registry';
-import { addOnlineUser, patchOnlineUserIfPresent } from '../services/online_list_redis';
+import { addOnlineUser } from '../services/online_list_redis';
 import { getUserRoom, getRoom } from '../services/room_list_redis';
 import * as onlineUserRegistry from './user_registry';
 import * as roomSocketRegistry from './room_socket_registry';
@@ -29,7 +29,7 @@ export const onConnection = () => async (ws: AuthenticatedWebSocket): Promise<vo
 
     clientRegistry.add(ws);
 
-    const user: OnlineUser = mapUserToOnlineUser(ws.user, { id: ws.user._id, status: 'online' });
+    const user: OnlineUser = mapUserToOnlineUser(ws.user, { id: ws.user._id });
     onlineUserRegistry.set(user.id, ws);
 
     const scheduleGracePeriod = (): void => {
@@ -81,11 +81,7 @@ export const onConnection = () => async (ws: AuthenticatedWebSocket): Promise<vo
         clientRegistry.remove(ws);
 
         onlineUserRegistry.remove(ws.user._id);
-        const roomIds = roomSocketRegistry.removeSocket(ws);
-
-        patchOnlineUserIfPresent(ws.user._id, { status: 'disconnecting' }, roomIds).catch((err) =>
-            logger.error(err, 'failed to mark user as disconnecting'),
-        );
+        roomSocketRegistry.removeSocket(ws);
 
         handleClose(hb, scheduleGracePeriod);
     });

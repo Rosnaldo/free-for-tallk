@@ -1,5 +1,3 @@
-import { OnlineUser } from "@repo/shared-types";
-
 export const getInitials = (name?: string): string => {
   if (!name) return 'VC';
   const parts = name.trim().split(/\s+/);

@@ -17,19 +17,6 @@ export function handleWsMessage(message: WsServerMessage, stores: WsHandlerStore
       break;
     case 'online-user:delta': {
       stores.onlineUserListStore.getState().applyDelta(message.delta);
-
-      const currentUserId = stores.currentUserStore.getState().currentUser?.id;
-      const delta = message.delta;
-      if (currentUserId) {
-        let newStatus;
-        if (delta.type === 'upsert' && delta.onlineUser.id === currentUserId) {
-          newStatus = delta.onlineUser.status;
-        } else if (delta.type === 'update-status' && delta.onlineUserId === currentUserId) {
-          newStatus = delta.status;
-        } else if (delta.type === 'remove' && delta.onlineUserId === currentUserId) {
-          newStatus = null;
-        }
-      }
       break;
     }
     case 'room:delta':

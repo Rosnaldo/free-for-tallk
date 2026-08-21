@@ -24,11 +24,10 @@ export const RoomPage: React.FC = () => {
   }, [roomId, activeRoomId, setActiveRoomId]);
 
   useEffect(() => {
-    if (activeRoom && currentUser && !activeRoom.members.includes(currentUser.id)) {
-      if (activeRoom.members.length < activeRoom.maxSlots) {
-        initWs.send({ event: 'room:join', roomId: activeRoom.id });
-      }
-    }
+    if (!activeRoom || !currentUser) return;
+    const isMember = activeRoom.members.includes(currentUser.id);
+    if (!isMember && activeRoom.members.length >= activeRoom.maxSlots) return;
+    initWs.send({ event: 'room:join', roomId: activeRoom.id });
   }, [activeRoom, currentUser]);
 
   const handleLeaveRoom = () => {

@@ -22,12 +22,6 @@ export const createOnlineUserListActions = (
     if (event.type === "upsert") {
       const others = get().onlineUsers.filter((v) => v.id !== event.onlineUser.id);
       set({ onlineUsers: [...others, event.onlineUser] });
-    } else if (event.type === "update-status") {
-      set({
-        onlineUsers: get().onlineUsers.map((v) =>
-          v.id === event.onlineUserId ? { ...v, status: event.status } : v
-        ),
-      });
     } else {
       set({ onlineUsers: get().onlineUsers.filter((v) => v.id !== event.onlineUserId) });
     }

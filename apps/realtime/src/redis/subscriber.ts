@@ -2,7 +2,7 @@ import type Redis from 'ioredis';
 import { REDIS_CHANNELS, SOCKET_OPEN, OnlineUserListEvent, RoomListEvent, RoomReactionEvent, RoomDeviceStateEvent, RoomChatEvent, RoomNoticeEvent, WsServerMessage } from '@repo/shared-types';
 import logger from '#logger';
 import { getRedisClient } from './singleton';
-import { addOnlineUser as addOnlineUserPresence, removeOnlineUser as removeOnlineUserPresence, patchOnlineUserIfPresent } from '../services/online_list_redis';
+import { addOnlineUser as addOnlineUserPresence, removeOnlineUser as removeOnlineUserPresence } from '../services/online_list_redis';
 import * as onlineRegistry from '../websocket/user_registry';
 import { broadcastRoomDelta } from '../websocket/broadcast_room_delta';
 import { broadcastRoomReaction } from '../websocket/broadcast_room_reaction';
@@ -24,8 +24,6 @@ function handleOnlineUserEvent(raw: string): void {
     let applied: Promise<void>;
     if (event.type === 'upsert') {
         applied = addOnlineUserPresence(event.onlineUser).then(() => undefined);
-    } else if (event.type === 'update-status') {
-        applied = patchOnlineUserIfPresent(event.onlineUserId, { status: event.status });
     } else if (event.type === 'remove') {
         applied = removeOnlineUserPresence(event.onlineUserId).then(() => undefined);
     } else {

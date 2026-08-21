@@ -136,7 +136,6 @@ export interface OnlineUser {
   email: string;
   avatar?: string;
   state: 'SP';
-  status: 'online' | 'disconnecting';
   initials: string;
   hearts: number;
   role: keyof typeof UserRole;
@@ -183,7 +182,6 @@ export interface Pagination {
 
 export type OnlineUserListEvent =
   | { type: "upsert"; onlineUser: OnlineUser }
-  | { type: "update-status"; onlineUserId: string; status: OnlineUser['status'] }
   | { type: "remove"; onlineUserId: string };
 
 export type RoomListEvent =
@@ -198,7 +196,7 @@ export type ActiveRoomEvent =
 
 export function mapUserToOnlineUser(
     user: IUser,
-    options?: Partial<Pick<OnlineUser, 'status' | 'id'>>,
+    options?: Partial<Pick<OnlineUser, 'id'>>,
 ): OnlineUser {
     return {
         id: options?.id ?? user._id,
@@ -206,7 +204,6 @@ export function mapUserToOnlineUser(
         email: user.email ?? '',
         avatar: user.avatar?.url,
         state: 'SP',
-        status: options?.status ?? 'online',
         initials: `${user.firstName[0] ?? ''}${user.lastName[0] ?? ''}`.toUpperCase(),
         hearts: 0,
         role: user.role,
