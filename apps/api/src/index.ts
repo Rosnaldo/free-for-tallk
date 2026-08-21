@@ -28,4 +28,7 @@ async function main() {
   app.listen(properties.port, () => logger.info(`api listening on ${properties.port}`));
 }
 
-main();
+main().catch((err) => {
+  logger.error(err, 'api failed to start');
+  process.exit(1);
+});
