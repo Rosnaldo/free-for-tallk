@@ -38,6 +38,20 @@ export function useCursorGlowDot(options?: UseCursorGlowDotOptions) {
       posRef.current.visible = false;
     };
 
+    // Touch devices never fire mousemove, so the dot needs its own handlers
+    // to follow a finger the same way it follows the cursor.
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      posRef.current.targetX = touch.clientX;
+      posRef.current.targetY = touch.clientY;
+      posRef.current.visible = true;
+    };
+
+    const handleTouchEnd = () => {
+      posRef.current.visible = false;
+    };
+
     const updatePosition = () => {
       const state = posRef.current;
       // Smooth delayed interpolation for enhanced trailing follow effect
@@ -54,11 +68,19 @@ export function useCursorGlowDot(options?: UseCursorGlowDotOptions) {
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     document.addEventListener('mouseleave', handleMouseLeave);
+    window.addEventListener('touchstart', handleTouchMove, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('touchcancel', handleTouchEnd);
     animationFrameId = requestAnimationFrame(updatePosition);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('touchstart', handleTouchMove);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
       cancelAnimationFrame(animationFrameId);
     };
   }, [easeFactor]);

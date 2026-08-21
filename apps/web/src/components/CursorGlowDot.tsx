@@ -26,8 +26,10 @@ export const CursorGlowDot: React.FC<CursorGlowDotProps> = ({ isModalOpen }) => 
         xmlns="http://www.w3.org/2000/svg"
         style={{ transform: 'translate3d(-100px, -100px, 0)', opacity: 0 }}
       >
-        {/* Solid clean amber/yellow circle matching the site's accent color (amber-400) */}
-        <circle cx="50" cy="50" r="50" fill="#fbbf24" />
+        {/* Solid amber/yellow circle -- uses the amber-400 utility (not a
+            hardcoded hex) so it's pixel-identical to every other amber-400
+            accent across the app, matching the home page's yellow. */}
+        <circle cx="50" cy="50" r="50" className="fill-amber-400" />
       </svg>
     </div>
   );

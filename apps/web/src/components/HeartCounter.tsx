@@ -49,8 +49,8 @@ export const HeartCounter: React.FC<HeartCounterProps> = ({
 
   const content = (
     <>
-      <Heart className={`${sizeConfig.icon} fill-amber-500 text-amber-500 shrink-0`} />
-      <span className={`font-semibold text-amber-500 tabular-nums ${sizeConfig.text}`}>
+      <Heart className={`${sizeConfig.icon} fill-amber-400 text-amber-400 shrink-0`} />
+      <span className={`font-semibold text-amber-400 tabular-nums ${sizeConfig.text}`}>
         {count}
       </span>
     </>

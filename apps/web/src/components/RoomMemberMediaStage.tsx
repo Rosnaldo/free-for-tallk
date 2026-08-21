@@ -59,7 +59,7 @@ export const RoomMemberMediaStage: React.FC<RoomMemberMediaStageProps> = ({
               <div className="h-8 bg-neutral-900 border-b border-white/10 px-3 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-400/80" />
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
                   <span className="text-[11px] text-white/60 ml-2 font-mono truncate max-w-xs sm:max-w-md">
                     {screenTitle}
@@ -76,7 +76,7 @@ export const RoomMemberMediaStage: React.FC<RoomMemberMediaStageProps> = ({
               {/* Window Content Display */}
               <div className="flex-1 p-6 flex flex-col items-center justify-center text-center bg-gradient-to-br from-neutral-950 to-neutral-900 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-3 shadow-inner">
+                <div className="w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400 mb-3 shadow-inner">
                   <Monitor className="w-8 h-8" />
                 </div>
                 <h4 className="text-base font-semibold text-white mb-1">
@@ -90,7 +90,7 @@ export const RoomMemberMediaStage: React.FC<RoomMemberMediaStageProps> = ({
 
             {/* Picture-in-Picture Floating Camera of Speaker if Camera is also ON */}
             {hasCam && (
-              <div className="absolute bottom-4 right-4 w-32 h-24 sm:w-44 sm:h-32 rounded-xl border-2 border-amber-500/60 bg-neutral-900 shadow-2xl overflow-hidden z-20 transition-all hover:scale-105">
+              <div className="absolute bottom-4 right-4 w-32 h-24 sm:w-44 sm:h-32 rounded-xl border-2 border-amber-400/60 bg-neutral-900 shadow-2xl overflow-hidden z-20 transition-all hover:scale-105">
                 {member.avatar ? (
                   <img
                     src={member.avatar}

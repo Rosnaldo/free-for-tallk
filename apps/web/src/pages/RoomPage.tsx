@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { RoomView } from '../components/RoomView';
 import { Footer } from '../components/Footer';
+import { CursorGlowDot } from '../components/CursorGlowDot';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { useActiveRoomStore, useCurrentUserStore, useRoomListStore } from '../states/stores';
 import { initWs } from '../services/ws/init-ws';
@@ -66,6 +67,7 @@ export const RoomPage: React.FC = () => {
 
   return (
     <div className="h-screen bg-black text-white flex flex-col font-sans selection:bg-amber-400 selection:text-black relative">
+      <CursorGlowDot />
       <RoomView
         room={activeRoom}
         currentUser={currentUser!}

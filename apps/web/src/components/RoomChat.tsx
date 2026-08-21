@@ -38,12 +38,12 @@ export const RoomChat: React.FC<RoomChatProps> = ({
   return (
     <div
       id="room-chat-panel"
-      className={`w-full sm:w-80 sm:max-w-xs border-l border-white/20 bg-black/80 flex flex-col flex flex-1 ${className}`}
+      className={`w-full sm:w-80 sm:max-w-xs border-l border-white/20 bg-transparent flex flex-col flex flex-1 ${className}`}
     >
       {/* Header */}
       <div className="p-3.5 border-b border-white/20 flex items-center justify-between bg-white/5">
         <div className="flex items-center gap-2">
-          <MessageSquare className="w-4 h-4 text-amber-500" />
+          <MessageSquare className="w-4 h-4 text-amber-400" />
           <span className="text-xs font-bold text-white">Chat da Sala</span>
         </div>
         <div className="flex items-center gap-2">
@@ -109,7 +109,7 @@ export const RoomChat: React.FC<RoomChatProps> = ({
                 <div
                   className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
                     isMe
-                      ? 'bg-amber-500 text-black font-medium rounded-br-none'
+                      ? 'bg-amber-400 text-black font-medium rounded-br-none'
                       : 'bg-white/10 text-white border border-white/20 rounded-bl-none'
                   }`}
                 >
@@ -131,7 +131,7 @@ export const RoomChat: React.FC<RoomChatProps> = ({
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Digite uma mensagem..."
-            className="flex-1 bg-white/5 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-500 transition-colors"
+            className="flex-1 bg-white/5 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400 transition-colors"
           />
           <button
             id="stage-chat-send-btn"
@@ -139,8 +139,8 @@ export const RoomChat: React.FC<RoomChatProps> = ({
             disabled={!inputText.trim()}
             className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shrink-0 shadow ${
               inputText.trim()
-                ? 'bg-amber-500 hover:bg-amber-500/90 text-black cursor-pointer'
-                : 'bg-black border border-white/20 text-white/40 opacity-60 cursor-not-allowed'
+                ? 'bg-amber-400 hover:bg-amber-400/90 text-black cursor-pointer'
+                : 'bg-transparent border border-white/20 text-white/40 opacity-60 cursor-not-allowed'
             }`}
             title="Enviar Mensagem"
           >

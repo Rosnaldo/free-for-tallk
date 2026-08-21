@@ -128,7 +128,7 @@ export const RoomView: React.FC<RoomViewProps> = ({
   return (
     <div
       id="room-view-container"
-      className="w-full h-screen bg-black text-white flex flex-col overflow-hidden relative"
+      className="w-full h-screen text-white flex flex-col overflow-hidden relative z-10"
     >
       {/* Main Body: Stage Area (Members Container with Controls) + Chat Panel */}
       <div className="flex-1 flex overflow-hidden">
